@@ -19,6 +19,7 @@ export class AuthComponent {
   private cdr = inject(ChangeDetectorRef);
 
   mode: 'login' | 'signup' = 'login';
+  staffRole = 'admin';
   loginForm = {
     email: '',
     password: ''
@@ -70,11 +71,11 @@ export class AuthComponent {
       this.cdr.markForCheck();
       return;
     }
-    this.http.post<{ token?: string }>(`${this.auth.getBaseUrl()}/auth/login`, this.loginForm).subscribe({
+    this.http.post<{ token?: string; role?: string }>(`${this.auth.getBaseUrl()}/auth/login`, this.loginForm).subscribe({
       next: res => {
         if (res?.token) {
           this.auth.setToken(res.token);
-          this.fetchProfileAndNavigate(res.token);
+          this.fetchProfileAndNavigate(res.token, res.role);
         } else {
           this.loginError = 'Login succeeded but token was missing.';
           this.cdr.markForCheck();
@@ -107,14 +108,37 @@ export class AuthComponent {
     });
   }
 
-  private fetchProfileAndNavigate(token: string) {
+  goToStaff() {
+    if (this.staffRole === 'supervisor') {
+      this.router.navigateByUrl('/supervisor/login');
+      return;
+    }
+    if (this.staffRole === 'do') {
+      this.router.navigateByUrl('/do/login');
+      return;
+    }
+    if (this.staffRole === 'cw') {
+      this.router.navigateByUrl('/cw/login');
+      return;
+    }
+    this.router.navigateByUrl('/admin/login');
+  }
+
+  private fetchProfileAndNavigate(token: string, fallbackRole?: string) {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.get<{ name?: string; email?: string }>(`${this.auth.getBaseUrl()}/auth/profile`, { headers }).subscribe({
+    this.http
+      .get<{ name?: string; email?: string; role?: string }>(`${this.auth.getBaseUrl()}/auth/profile`, {
+        headers
+      })
+      .subscribe({
       next: res => {
-        this.auth.setProfile({ name: res.name, email: res.email });
+        this.auth.setProfile({ name: res.name, email: res.email, role: res.role || fallbackRole });
         this.router.navigateByUrl('/dashboard');
       },
       error: () => {
+        if (fallbackRole) {
+          this.auth.setProfile({ role: fallbackRole });
+        }
         // even if profile fails, still navigate with token
         this.router.navigateByUrl('/dashboard');
       }

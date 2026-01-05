@@ -70,6 +70,14 @@
   margin-top: 0.5rem;
 }
 
+.nav-section-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.4rem;
+}
+
 .spacer {
   flex: 1;
 }

@@ -15,6 +15,17 @@
       </button>
     </div>
 
+    <div class="staff-cta">
+      <span>Are you a staff member?</span>
+      <select class="field small" [(ngModel)]="staffRole" name="staffRole">
+        <option value="admin">Admin</option>
+        <option value="supervisor">Supervisory Officer</option>
+        <option value="do">Department Officer</option>
+        <option value="cw">Case Worker</option>
+      </select>
+      <button type="button" class="link-button" (click)="goToStaff()">Login here</button>
+    </div>
+
     <form *ngIf="mode === 'login'" (ngSubmit)="loginCitizen()" class="form">
       <label class="field-label">Email</label>
       <input

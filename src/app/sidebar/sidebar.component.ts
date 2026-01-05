@@ -3,6 +3,80 @@ import { RouterModule } from '@angular/router';
 import { Component, inject, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 
+type NavItem = {
+  label: string;
+  short: string;
+  route: string;
+  exact?: boolean;
+  fragment?: string;
+};
+
+type NavSection = { title: string; items: NavItem[] };
+
+const PUBLIC_NAV: NavSection[] = [
+  {
+    title: 'General',
+    items: [
+      { label: 'Home', short: 'H', route: '/', exact: true },
+      { label: 'About Us', short: 'A', route: '/about' }
+    ]
+  }
+];
+
+const NAV_CONFIG: Record<string, NavSection[]> = {
+  citizen: [
+    {
+      title: 'General',
+      items: [
+        { label: 'Home', short: 'H', route: '/', exact: true },
+        { label: 'About Us', short: 'A', route: '/about' }
+      ]
+    },
+    {
+      title: 'Citizen',
+      items: [{ label: 'Grievance', short: 'G', route: '/dashboard' }]
+    }
+  ],
+  staff: [
+    {
+      title: 'Staff',
+      items: [
+        { label: 'Staff Home', short: 'S', route: '/dashboard' },
+        { label: 'Cases', short: 'C', route: '/dashboard' },
+        { label: 'Reports', short: 'R', route: '/dashboard' }
+      ]
+    }
+  ],
+  admin: [
+    {
+      title: 'Admin',
+      items: [
+        { label: 'Admin Console', short: 'AD', route: '/admin' },
+        { label: 'Departments', short: 'D', route: '/admin/departments' },
+        { label: 'Department Officers', short: 'DO', route: '/admin/department-officers' },
+        { label: 'Supervisory Officers', short: 'SO', route: '/admin/supervisors' }
+      ]
+    }
+  ],
+  department_officer: [
+    {
+      title: 'Department Officer',
+      items: [{ label: 'Officer Console', short: 'DO', route: '/do' }]
+    }
+  ],
+  supervisory_officer: [
+    {
+      title: 'Supervisor',
+      items: [{ label: 'Supervise Grievances', short: 'SG', route: '/supervisor' }]
+    }
+  ],
+  case_worker: [
+    {
+      title: 'Case Worker',
+      items: [{ label: 'Assigned Grievances', short: 'CW', route: '/cw' }]
+    }
+  ]
+};
 
 @Component({
   selector: 'app-sidebar',
@@ -56,5 +130,21 @@ export class SidebarComponent {
 
   toggleMenu() {
     this.menuOpen.update(v => !v);
+  }
+
+  get navSections(): NavSection[] {
+    if (!this.isAuthed()) {
+      return PUBLIC_NAV;
+    }
+    const roleKey = (this.auth.getRole() || 'citizen').toLowerCase();
+    return NAV_CONFIG[roleKey] ?? NAV_CONFIG['citizen'];
+  }
+
+  trackSection(index: number, section: NavSection) {
+    return `${index}-${section.title}`;
+  }
+
+  trackNav(index: number, item: NavItem) {
+    return `${index}-${item.route}-${item.label}`;
   }
 }

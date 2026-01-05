@@ -1,0 +1,218 @@
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../auth/auth.service';
+
+type Grievance = {
+  id?: string;
+  grievanceId?: string;
+  description?: string;
+  departmentId?: string;
+  status?: string;
+  updatedBy?: string;
+  remarks?: string;
+  assignedTo?: string;
+  escalated?: boolean;
+};
+
+@Component({
+  selector: 'app-cw-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <section class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">Case Worker</p>
+          <h1>Assigned Grievances</h1>
+          <p class="subtitle">Review your assigned grievances and update their status.</p>
+        </div>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <div class="card-head">
+            <h2>Your assigned grievances</h2>
+            <p class="helper">Auto-loaded. Refresh anytime.</p>
+          </div>
+          <div class="actions">
+            <button class="button ghost" type="button" (click)="loadAssigned()" [disabled]="assignedLoading">Refresh</button>
+          </div>
+          <div class="response error" *ngIf="assignedError">{{ assignedError }}</div>
+          <div class="card-grid" *ngIf="assignedList.length">
+            <article class="grievance-card" *ngFor="let g of assignedList; trackBy: trackGrievance">
+              <header class="grievance-head">
+                <div>
+                  <div class="id">#{{ g.id }}</div>
+                  <div class="muted">Dept: {{ g.departmentId || '—' }}</div>
+                </div>
+                <span class="status" [class.escalated]="g.escalated" [class.submitted]="g.status === 'SUBMITTED'">{{ g.status || 'N/A' }}</span>
+              </header>
+              <p class="description">{{ g.description || 'No description provided.' }}</p>
+              <div class="meta">
+                <span *ngIf="g.updatedBy">Updated by: {{ g.updatedBy }}</span>
+                <span *ngIf="g.remarks">Remarks: {{ g.remarks }}</span>
+              </div>
+            </article>
+          </div>
+          <div class="response warn" *ngIf="!assignedLoading && !assignedList.length && !assignedError">No assigned grievances.</div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Update status</h2>
+            <p class="helper">Mark a grievance as IN_PROGRESS, RESOLVED, or REJECTED.</p>
+          </div>
+          <div class="form-grid two-column">
+            <div>
+              <label class="field-label">Grievance ID</label>
+              <input class="field" [(ngModel)]="statusForm.grievanceId" />
+            </div>
+            <div>
+              <label class="field-label">Status</label>
+              <select class="field" [(ngModel)]="statusForm.status">
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="RESOLVED">RESOLVED</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Updated by</label>
+              <input class="field" [(ngModel)]="statusForm.updatedBy" />
+            </div>
+            <div>
+              <label class="field-label">Remarks</label>
+              <input class="field" [(ngModel)]="statusForm.remarks" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="button" type="button" (click)="updateStatus()" [disabled]="statusSubmitting">
+              {{ statusSubmitting ? 'Updating...' : 'Update' }}
+            </button>
+          </div>
+          <div class="response success" *ngIf="statusSuccess">{{ statusSuccess }}</div>
+          <div class="response error" *ngIf="statusError">{{ statusError }}</div>
+        </section>
+      </div>
+    </section>
+  `,
+  styles: [
+    `:host{display:block}
+    .admin-shell{display:flex;flex-direction:column;gap:1.2rem;padding:1.5rem 1.75rem}
+    .admin-header{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:flex-start}
+    .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.76rem;color:var(--accent-2);margin:0 0 .35rem}
+    h1{margin:0 0 .35rem;font-size:1.9rem}
+    .subtitle{margin:0;color:var(--muted);font-size:1rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.2rem}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.1rem;display:flex;flex-direction:column;gap:.75rem;box-shadow:0 14px 28px rgba(28,39,56,0.1)}
+    .card-head h2{margin:0;font-size:1.12rem}
+    .helper{margin:0;color:var(--muted);font-size:.95rem}
+    .form-grid{display:grid;gap:.6rem}
+    .form-grid.two-column{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem}
+    .field-label{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+    .field{border:1px solid var(--border);border-radius:12px;padding:.7rem .85rem;font:inherit;background:#fff}
+    .actions{display:flex;gap:.6rem;flex-wrap:wrap}
+    .button{border:none;border-radius:999px;background:var(--accent);color:#fff;padding:.65rem 1.2rem;font-weight:700;cursor:pointer;box-shadow:0 10px 22px rgba(31,79,147,0.22);font-size:.95rem}
+    .button.ghost{background:#eef2fb;color:var(--accent);box-shadow:none;border:1px solid rgba(31,79,147,0.2)}
+    .button[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none}
+    .response{border-radius:12px;padding:.7rem .85rem;font-size:.9rem}
+    .response.success{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
+    .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+    .response.warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;margin-top:.35rem}
+    .grievance-card{border:1px solid var(--border);border-radius:14px;padding:.9rem;background:#fff;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 12px 22px rgba(16,24,40,0.08)}
+    .grievance-card.escalated{border-color:#fca5a5;background:#fff1f2}
+    .grievance-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.65rem}
+    .id{font-weight:800;font-size:1rem}
+    .muted{color:var(--muted);font-size:.95rem}
+    .status{border-radius:999px;padding:.3rem .7rem;font-size:.82rem;font-weight:700;background:#eef2fb;color:#1f4f93;border:1px solid rgba(31,79,147,0.2)}
+    .status.submitted{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+    .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
+    .description{margin:0;font-size:1rem;line-height:1.45}
+    .meta{display:flex;flex-wrap:wrap;gap:.55rem;font-size:.9rem;color:var(--muted)}
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CwDashboardComponent implements OnInit {
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
+  assignedList: Grievance[] = [];
+  assignedLoading = false;
+  assignedError = '';
+
+  statusForm = { grievanceId: '', status: 'IN_PROGRESS', updatedBy: '', remarks: '' };
+  statusSubmitting = false;
+  statusSuccess = '';
+  statusError = '';
+
+  ngOnInit(): void {
+    this.loadAssigned();
+  }
+
+  loadAssigned() {
+    this.assignedError = '';
+    this.assignedLoading = true;
+    this.http.get<Grievance[]>(`${this.auth.getBaseUrl()}/grievance-service/api/grievances/my-assigned`, { headers: this.authHeaders() }).subscribe({
+      next: res => {
+        this.assignedList = Array.isArray(res) ? res : [];
+        this.assignedLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.assignedError = this.readError(err);
+        this.assignedLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  updateStatus() {
+    this.statusError = '';
+    this.statusSuccess = '';
+    if (!this.statusForm.grievanceId.trim()) {
+      this.statusError = 'Grievance ID is required.';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.statusSubmitting = true;
+    this.cdr.markForCheck();
+    this.http
+      .patch(`${this.auth.getBaseUrl()}/grievance-service/api/grievances/status`, this.statusForm, { headers: this.authHeaders() })
+      .subscribe({
+        next: () => {
+          this.statusSuccess = 'Status updated.';
+          this.statusSubmitting = false;
+          this.loadAssigned();
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.statusError = this.readError(err);
+          this.statusSubmitting = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  trackGrievance(index: number, item: Grievance) {
+    return item.id || item.grievanceId || index;
+  }
+
+  private authHeaders() {
+    const trimmed = this.auth.getToken().trim();
+    return trimmed ? new HttpHeaders({ Authorization: `Bearer ${trimmed}`, 'Content-Type': 'application/json' }) : new HttpHeaders({ 'Content-Type': 'application/json' });
+  }
+
+  private readError(error: unknown) {
+    if (error instanceof HttpErrorResponse) {
+      if (typeof error.error === 'string') {
+        return error.error;
+      }
+      return error.error?.message || error.message;
+    }
+    return String(error);
+  }
+}

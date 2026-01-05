@@ -17,26 +17,20 @@
   </div>
 
   <nav class="nav">
-    <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <span class="nav-short">H</span>
-      <span class="nav-text">Home</span>
-    </a>
-    <a class="nav-item" routerLink="/about" routerLinkActive="active">
-      <span class="nav-short">A</span>
-      <span class="nav-text">About Us</span>
-    </a>
-    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
-      <span class="nav-short">F</span>
-      <span class="nav-text">FAQs</span>
-    </a>
-    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
-      <span class="nav-short">G</span>
-      <span class="nav-text">Grievance</span>
-    </a>
-    <a class="nav-item" routerLink="/departments-list" routerLinkActive="active">
-      <span class="nav-short">D</span>
-      <span class="nav-text">Departments</span>
-    </a>
+    <ng-container *ngFor="let section of navSections; trackBy: trackSection">
+      <div class="nav-section-title" *ngIf="!collapsed()">{{ section.title }}</div>
+      <a
+        *ngFor="let item of section.items; trackBy: trackNav"
+        class="nav-item"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="item.exact ? { exact: true } : { exact: false }"
+        [fragment]="item.fragment"
+      >
+        <span class="nav-short">{{ item.short }}</span>
+        <span class="nav-text">{{ item.label }}</span>
+      </a>
+    </ng-container>
   </nav>
   <div class="spacer"></div>
   <ng-container *ngIf="isAuthed(); else signupLink">

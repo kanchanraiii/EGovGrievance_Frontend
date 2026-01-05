@@ -8,6 +8,10 @@ export const redirectAuthGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (auth.isAuthenticated()) {
+    const role = auth.getRole().toLowerCase();
+    if (role === 'admin') {
+      return router.parseUrl('/admin');
+    }
     return router.parseUrl('/');
   }
 
