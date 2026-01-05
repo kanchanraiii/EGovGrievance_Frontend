@@ -1,0 +1,58 @@
+﻿<aside class="sidebar" [class.collapsed]="collapsed()">
+  <div class="brand">
+    <div class="logo">E-GR</div>
+    <div class="brand-text" *ngIf="!collapsed()">
+      <div class="brand-title">E-Grievance</div>
+      <div class="brand-sub">Redressal Portal</div>
+    </div>
+    <button
+      class="icon-button"
+      (click)="toggle()"
+      [attr.aria-expanded]="!collapsed()"
+      [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+      [attr.title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+    >
+      {{ collapsed() ? 'ƒ%®' : 'ƒ%¦' }}
+    </button>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <span class="nav-short">H</span>
+      <span class="nav-text">Home</span>
+    </a>
+    <a class="nav-item" routerLink="/About" routerLinkActive="active">
+      <span class="nav-short">A</span>
+      <span class="nav-text">About Us</span>
+    </a>
+    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+      <span class="nav-short">F</span>
+      <span class="nav-text">FAQs</span>
+    </a>
+    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+      <span class="nav-short">G</span>
+      <span class="nav-text">Grievance</span>
+    </a>
+  </nav>
+  <div class="spacer"></div>
+  <ng-container *ngIf="isAuthed(); else signupLink">
+    <div class="user-card-wrapper" (click)="toggleMenu()" [class.open]="menuOpen()">
+      <div class="user-card" [title]="displayEmail">
+        <img class="avatar" [src]="avatarUrl" alt="User avatar" />
+        <div class="user-meta" *ngIf="!collapsed()">
+          <div class="user-name">{{ displayName }}</div>
+          <div class="user-email">{{ displayEmail }}</div>
+        </div>
+      </div>
+      <div class="dropdown" *ngIf="menuOpen()">
+        <button class="logout" type="button" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #signupLink>
+    <a class="nav-item signup signup-bottom" routerLink="/auth" routerLinkActive="active">
+      <span class="nav-short">S</span>
+      <span class="nav-text">Sign Up</span>
+    </a>
+  </ng-template>
+</aside>

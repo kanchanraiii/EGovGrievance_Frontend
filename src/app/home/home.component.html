@@ -1,0 +1,117 @@
+﻿<section class="page-frame">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">My Grievances</p>
+      <h1>Track and update your submissions</h1>
+      <p class="subtitle">
+        View all your grievances in one place. Open a grievance to see details or share a rating once itƒ?Ts resolved.
+      </p>
+    </div>
+    <button class="button" type="button" (click)="toggleLodge()" [attr.aria-expanded]="showLodgeForm()">
+      {{ showLodgeForm() ? 'Close form' : 'Lodge a grievance' }}
+    </button>
+  </header>
+
+  <div class="layout">
+    <section class="card lodge" *ngIf="showLodgeForm()">
+      <div class="card-head">
+        <h2>Lodge a grievance</h2>
+        <p class="helper">Fill in the details below. All fields are required.</p>
+      </div>
+      <div class="form-grid two-column">
+        <div>
+          <label class="field-label">Department ID</label>
+          <input class="field" [(ngModel)]="grievanceForm.departmentId" />
+        </div>
+        <div>
+          <label class="field-label">Category Code</label>
+          <input class="field" [(ngModel)]="grievanceForm.categoryCode" />
+        </div>
+        <div>
+          <label class="field-label">Sub-category Code</label>
+          <input class="field" [(ngModel)]="grievanceForm.subCategoryCode" />
+        </div>
+        <div class="full">
+          <label class="field-label">Description</label>
+          <textarea class="field field-textarea" rows="4" [(ngModel)]="grievanceForm.description"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="button" type="button" (click)="createGrievance()">Submit grievance</button>
+      </div>
+      <div class="response error" *ngIf="grievanceError">{{ grievanceError }}</div>
+      <div class="response success" *ngIf="grievanceResult">Grievance submitted successfully.</div>
+    </section>
+
+    <div class="columns">
+      <section class="card list">
+        <div class="card-head">
+          <h2>Your grievances</h2>
+          <p class="helper">Automatically loaded from your account.</p>
+        </div>
+        <div class="response error" *ngIf="myGrievancesError">{{ myGrievancesError }}</div>
+        <div class="empty" *ngIf="!myGrievancesError && grievances.length === 0">
+          No grievances found. Click ƒ?oLodge a grievanceƒ?? to submit one.
+        </div>
+        <ul class="grievance-list" *ngIf="grievances.length">
+          <li
+            *ngFor="let item of grievances"
+            (click)="selectGrievance(item)"
+            [class.active]="selectedId === getId(item)"
+          >
+            <div class="grievance-title">
+              <span class="badge">{{ item.status || 'Pending' }}</span>
+              <span class="id-text">ID: {{ getId(item) }}</span>
+            </div>
+            <div class="grievance-meta">
+              <div>
+                <strong>Department:</strong> {{ item.departmentId || 'ƒ?"' }}
+              </div>
+              <div>
+                <strong>Category:</strong> {{ item.categoryCode || 'ƒ?"' }}
+              </div>
+            </div>
+            <p class="grievance-desc">{{ item.description || 'No description provided.' }}</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card detail" *ngIf="selectedGrievance">
+        <div class="card-head">
+          <h2>Grievance details</h2>
+          <p class="helper">Review information and share your rating.</p>
+        </div>
+        <div class="detail-grid">
+          <div><span class="muted">Tracking ID</span><div>{{ getId(selectedGrievance) }}</div></div>
+          <div><span class="muted">Status</span><div class="badge large">{{ selectedGrievance.status || 'Pending' }}</div></div>
+          <div><span class="muted">Department</span><div>{{ selectedGrievance.departmentId || 'ƒ?"' }}</div></div>
+          <div><span class="muted">Category</span><div>{{ selectedGrievance.categoryCode || 'ƒ?"' }}</div></div>
+          <div><span class="muted">Sub-category</span><div>{{ selectedGrievance.subCategoryCode || 'ƒ?"' }}</div></div>
+          <div><span class="muted">Updated</span><div>{{ selectedGrievance.updatedAt || 'ƒ?"' }}</div></div>
+        </div>
+        <div class="detail-section">
+          <span class="muted">Description</span>
+          <p class="grievance-desc">{{ selectedGrievance.description || 'No description provided.' }}</p>
+        </div>
+
+        <div class="rating-block">
+          <h3>Rate this grievance</h3>
+          <p class="helper">Scores from 1 (poor) to 5 (excellent).</p>
+          <div class="rating-inputs">
+            <label *ngFor="let n of ratingOptions">
+              <input type="radio" name="score" [value]="n" [(ngModel)]="ratingScore" />
+              <span>{{ n }}</span>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="button" type="button" (click)="postRating()" [disabled]="!ratingScore">
+              Submit rating
+            </button>
+          </div>
+          <div class="response error" *ngIf="ratingError">{{ ratingError }}</div>
+          <div class="response success" *ngIf="ratingResult">Thank you for your feedback.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>

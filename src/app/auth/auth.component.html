@@ -1,0 +1,79 @@
+﻿<section class="auth-shell">
+  <div class="panel">
+    <header>
+      <p class="eyebrow">Citizen Access</p>
+      <h1>Login or Sign Up</h1>
+      <p class="subtitle">Use your citizen credentials to access your grievance dashboard.</p>
+    </header>
+
+    <div class="toggle">
+      <button class="toggle-button" [class.active]="mode === 'login'" (click)="mode = 'login'">
+        Login
+      </button>
+      <button class="toggle-button" [class.active]="mode === 'signup'" (click)="mode = 'signup'">
+        Sign Up
+      </button>
+    </div>
+
+    <form *ngIf="mode === 'login'" (ngSubmit)="loginCitizen()" class="form">
+      <label class="field-label">Email</label>
+      <input
+        class="field"
+        type="email"
+        [(ngModel)]="loginForm.email"
+        name="loginEmail"
+        (ngModelChange)="onLoginChange()"
+      />
+      <label class="field-label">Password</label>
+      <input
+        class="field"
+        type="password"
+        [(ngModel)]="loginForm.password"
+        name="loginPassword"
+        (ngModelChange)="onLoginChange()"
+      />
+      <div class="response warn" *ngIf="loginValidation">{{ loginValidation }}</div>
+      <button class="button" type="submit" [disabled]="!!loginValidation">Login</button>
+      <div class="response error" *ngIf="loginError">{{ loginError }}</div>
+    </form>
+
+    <form *ngIf="mode === 'signup'" (ngSubmit)="registerCitizen()" class="form">
+      <label class="field-label">Full name</label>
+      <input
+        class="field"
+        [(ngModel)]="registerForm.fullName"
+        name="fullName"
+        (ngModelChange)="onRegisterChange()"
+      />
+      <label class="field-label">Email</label>
+      <input
+        class="field"
+        type="email"
+        [(ngModel)]="registerForm.email"
+        name="registerEmail"
+        (ngModelChange)="onRegisterChange()"
+      />
+      <label class="field-label">Phone</label>
+      <input
+        class="field"
+        [(ngModel)]="registerForm.phone"
+        name="phone"
+        (ngModelChange)="onRegisterChange()"
+      />
+      <label class="field-label">Password</label>
+      <input
+        class="field"
+        type="password"
+        [(ngModel)]="registerForm.password"
+        name="registerPassword"
+        (ngModelChange)="onRegisterChange()"
+      />
+      <div class="response warn" *ngIf="registerValidation">{{ registerValidation }}</div>
+      <button class="button" type="submit" [disabled]="!!registerValidation">Create Account</button>
+      <div class="response error" *ngIf="registerError">{{ registerError }}</div>
+      <div class="response success" *ngIf="registerResult">
+        Account created. You can log in now.
+      </div>
+    </form>
+  </div>
+</section>
