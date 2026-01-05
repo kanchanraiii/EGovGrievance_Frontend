@@ -12,7 +12,7 @@
       [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
       [attr.title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
     >
-      {{ collapsed() ? 'ƒ%®' : 'ƒ%¦' }}
+      {{ collapsed() ? '>>' : '<<' }}
     </button>
   </div>
 
@@ -21,7 +21,7 @@
       <span class="nav-short">H</span>
       <span class="nav-text">Home</span>
     </a>
-    <a class="nav-item" routerLink="/About" routerLinkActive="active">
+    <a class="nav-item" routerLink="/about" routerLinkActive="active">
       <span class="nav-short">A</span>
       <span class="nav-text">About Us</span>
     </a>
@@ -32,6 +32,10 @@
     <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
       <span class="nav-short">G</span>
       <span class="nav-text">Grievance</span>
+    </a>
+    <a class="nav-item" routerLink="/departments-list" routerLinkActive="active">
+      <span class="nav-short">D</span>
+      <span class="nav-text">Departments</span>
     </a>
   </nav>
   <div class="spacer"></div>

@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { Component, inject, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,

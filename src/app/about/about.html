@@ -1,1 +1,60 @@
-<p>about works!</p>
+<section class="about">
+  <div class="hero">
+    <p class="eyebrow">E-Gov Grievance Redressal Portal</p>
+    <h1>About Platform</h1>
+    <p class="lead"></p>
+    <div class="cta">
+      <a class="button" routerLink="/dashboard">Go to Dashboard</a>
+      <a class="button ghost" routerLink="/auth">Login / Sign Up</a>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="features-panel">
+      <h3>Springboot 3.2.5 + Angular 21 Full Stack Application</h3>
+      <p>
+        Seamless full-stack integration using Angular 21 for a reactive UI and Spring Boot 3.2.5
+        Reactive WebFlux.
+      </p>
+    </div>
+    <div class="features-panel">
+      <h3>MongoDB for NoSQL Database Management</h3>
+      <p>Scalable NoSQL storage using MongoDB to handle grievance with fast retrieval.</p>
+    </div>
+    <div class="features-panel">
+      <h3>Microservices Based Architecture & Unit Tested</h3>
+      <p>
+        Decoupled microservices architecture ensuring independent scalability with rigorous JUnit
+        testing for code quality.
+      </p>
+    </div>
+    <div class="features-panel">
+      <h3>Dockerized CI/CD with Jenkins Pipeline</h3>
+      <p>Fully containerized Docker deployment with Jenkins Pipelining for CI/CD</p>
+    </div>
+  </div>
+
+  <div class="large-features">
+    <h3>Platform Overview</h3>
+    <ul>
+      <li>
+        Five roles (Admin, Supervisory Officer, Department Officer, Case Worker, Citizen) with
+        JWT-based role-driven access control.
+      </li>
+      <li>
+        Seven-stage grievance lifecycle:
+        <strong
+          >submitted → assigned → dept_review → in_progress → resolved → closed → escalated</strong
+        >.
+      </li>
+      <li>Department Officers and Case Workers manage grievance investigation and resolution.</li>
+      <li>
+        Supervisory Officers monitor deadlines and handle escalations, while Admins manage
+        departments and users.
+      </li>
+      <li>
+        Citizens submit and track grievances, with automated CI/CD deployment via Jenkins pipeline.
+      </li>
+    </ul>
+  </div>
+</section>
