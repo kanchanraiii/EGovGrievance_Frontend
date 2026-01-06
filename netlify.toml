@@ -16,3 +16,9 @@
   to = "http://20.244.2.109:9005/storage/:splat"
   status = 200
   force = true
+
+# SPA fallback for client-side routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
