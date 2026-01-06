@@ -145,7 +145,7 @@ export class HomeComponent implements OnInit {
   fetchDepartments() {
     this.departmentsLoading = true;
     this.departmentsError = '';
-    this.http.get<Department[]>('http://localhost:3006/stateGovernmentDepartments').subscribe({
+    this.http.get<Department[]>('http://20.244.2.109:3006/stateGovernmentDepartments').subscribe({
       next: res => {
         this.departments = Array.isArray(res) ? res : [];
         this.departmentsLoading = false;
