@@ -34,7 +34,7 @@ export const routes: Routes = [
   },
   { path: 'auth', component: AuthComponent, canActivate: [redirectAuthGuard] },
   { path: 'dashboard', component: HomeComponent, canActivate: [authGuard] },
-  { path: 'admin/view-departments', component: AdminDepartmentsListComponent, canActivate: [adminGuard] },
+  { path: 'admin/view-departments', component: AdminDepartmentsListComponent, canActivate: [authGuard] },
   { path: 'admin/login', component: AdminAuthComponent, canActivate: [redirectAuthGuard] },
   { path: 'admin', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'admin/departments', component: AdminDepartmentsComponent, canActivate: [adminGuard] },
