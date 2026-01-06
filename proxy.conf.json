@@ -16,5 +16,14 @@
     "pathRewrite": {
       "^/departments-api": ""
     }
+  },
+  "/storage-api": {
+    "target": "http://20.244.2.109:9005",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info",
+    "pathRewrite": {
+      "^/storage-api": ""
+    }
   }
 }

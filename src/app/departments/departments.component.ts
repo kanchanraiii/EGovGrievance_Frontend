@@ -49,8 +49,8 @@ export class DepartmentsComponent implements OnInit {
     this.centralError = '';
 
     forkJoin({
-      state: this.http.get<any[]>('http://20.244.2.109:3006/stateGovernmentDepartments'),
-      central: this.http.get<any[]>('http://20.244.2.109:3006/centralGovernmentDepartments')
+      state: this.http.get<any[]>('http://localhost:3006/stateGovernmentDepartments'),
+      central: this.http.get<any[]>('http://localhost:3006/centralGovernmentDepartments')
     }).subscribe({
       next: res => {
         this.stateDepartments = Array.isArray(res.state) ? res.state : [];

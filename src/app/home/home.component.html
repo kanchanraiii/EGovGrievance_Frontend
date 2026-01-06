@@ -79,6 +79,21 @@
           <label class="field-label">Description</label>
           <textarea class="field field-textarea" rows="4" [(ngModel)]="grievanceForm.description"></textarea>
         </div>
+        <div class="full">
+          <label class="field-label">Attachments (optional)</label>
+          <input
+            class="field"
+            type="file"
+            multiple
+            accept=".pdf,.doc,.docx,image/*"
+            (change)="onFilesSelected($event)"
+          />
+          <div class="inline-help">PDF, DOC/DOCX, images. Max 20 MB per file. Multiple allowed.</div>
+          <div class="inline-help error" *ngIf="attachmentError">{{ attachmentError }}</div>
+          <div class="inline-help" *ngIf="attachments.length">
+            Selected: {{ attachmentsLabel }}
+          </div>
+        </div>
       </div>
       <div class="actions">
         <button class="button" type="button" (click)="createGrievance()" [disabled]="grievanceSubmitting">
@@ -137,6 +152,23 @@
             <div class="detail-section">
               <span class="muted">Description</span>
               <p class="grievance-desc">{{ item.description || 'No description provided.' }}</p>
+            </div>
+
+            <div class="detail-section">
+              <span class="muted">Attachments</span>
+              <div class="inline-help" *ngIf="attachmentsLoading">Loading attachments...</div>
+              <div class="inline-help error" *ngIf="attachmentsError">{{ attachmentsError }}</div>
+              <ul class="attachment-list" *ngIf="attachmentsByGrievance[getId(item)]?.length">
+                <li *ngFor="let file of attachmentsByGrievance[getId(item)]">
+                  <button class="attachment-link" type="button" (click)="downloadAttachment(file)">
+                    {{ file.fileName || file.id || 'Attachment' }}
+                  </button>
+                  <span class="muted small" *ngIf="file.uploadedBy"> · {{ file.uploadedBy }}</span>
+                </li>
+              </ul>
+              <div class="inline-help" *ngIf="!attachmentsLoading && !attachmentsByGrievance[getId(item)]?.length">
+                No attachments uploaded yet.
+              </div>
             </div>
 
             <div class="rating-block" *ngIf="isResolved(item); else ratingLocked">
