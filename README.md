@@ -1,47 +1,37 @@
-# E-Grievance Frontend
+# Centralized Public Grievance Redress And Monitoring System
 
-Citizen grievance portal with staff consoles (admin, supervisor, department officer, case worker) and analytics. Angular 21, Chart.js.
+Track issues, submit new grievances, and follow up on resolutions in one place. Live Demo : [https://egrievance-and-redressal.netlify.app/](https://egrievance-and-redressal.netlify.app/)
 
-## Features
-- Citizen: lodge grievances, view history, rate resolved items, upload/view attachments.
-- Staff: admin/DO/SO/CW dashboards, department management, grievance views.
-- Analytics: status, department load, and 7-day trend (Chart.js).
-- File storage: upload, list, download attachments via storage gateway.
+## Stack highlights
+- Full stack: Angular 21 UI + Spring Boot 3.2.5 Reactive WebFlux services.
+- Database: MongoDB for fast, scalable grievance storage.
+- Architecture: Microservices with JUnit-tested services for quality.
+- CI/CD: Dockerized services, Jenkins pipeline for automated builds/deploys.
 
-## Quick start
-```bash
-npm install
-ng serve --proxy-config proxy.conf.json
-# app at http://localhost:4200
-```
+## Platform overview
+- Roles: Admin, Supervisory Officer, Department Officer, Case Worker, Citizen (JWT-based role access).
+- Lifecycle: submitted → assigned → dept_review → in_progress → resolved → closed → escalated.
+- Responsibilities: DO/CW investigate and resolve; SO monitors deadlines and escalations; Admin manages departments/users; Citizens submit/track grievances.
 
-## API endpoints (via proxy)
-- Core: `/api/grievance-service/...`
-- Departments JSON: `/departments-api/...`
-- Storage: `/storage-api/storage/...` (upload/list/download attachments)
-Update `proxy.conf.json` and `netlify.toml` if hosts change.
 
-## Auth roles
-- Citizen: login/sign up via `/auth`.
-- Staff: admin `/admin/login`, supervisor `/supervisor/login`, department officer `/do/login`, case worker `/cw/login`.
-- Sidebar adapts to role; analytics at `/analytics` for staff.
-
-## Grievance + attachments
-1) Create (JSON): `POST /api/grievance-service/api/grievances/create` body `{departmentId, categoryCode, subCategoryCode, description}`.
-2) Upload files: `POST /storage-api/storage/upload` form-data: `file`, `grievanceId`, `uploadedBy` (bearer token required). Supported: pdf/doc/docx/png/jpg up to 20 MB each.
-3) List: `GET /storage-api/storage/grievance/{grievanceId}`. Download: `GET /storage-api/storage/{fileId}`.
-
-## Build
-```bash
-ng build
-```
-Artifacts output to `dist/e-grievance`.
-
-## Screenshots
-Add your screenshots here:
-- Citizen dashboard: ![Citizen](path/to/citizen.png)
-- Staff dashboards: ![Staff](path/to/staff.png)
-- Analytics: ![Analytics](path/to/analytics.png)
-
-## Deploy notes (Netlify)
-`netlify.toml` rewrites `/api`, `/departments-api`, `/storage-api` to your gateway. Ensure gateway is publicly reachable and CORS allows your Netlify domain.
+## Citizen Usage
+<p align="center">
+  <img src="images/citizen.png" alt="Homepage" width="700"/>
+  <br/>
+  <sub>Figure 1. Homepage</sub>
+</p>
+<p align="center">
+  <img src="images/citizen2.png" alt="Departments" width="700"/>
+  <br/>
+  <sub>Figure 2. Departments</sub>
+</p>
+<p align="center">
+  <img src="images/citizen3.png" alt="Grievance Form" width="700"/>
+  <br/>
+  <sub>Figure 3. Grievance Form</sub>
+</p>
+<p align="center">
+  <img src="images/citizen4.png" alt="Citizen Grievances" width="700"/>
+  <br/>
+  <sub>Figure 4. Citizen's Grievances</sub>
+</p>
