@@ -1,6 +1,9 @@
 # Centralized Public Grievance Redress And Monitoring System
 
-Track issues, submit new grievances, and follow up on resolutions in one place. Live Demo : [https://egrievance-and-redressal.netlify.app/](https://egrievance-and-redressal.netlify.app/)
+Track issues, submit new grievances, and follow up on resolutions in one place. 
+
+## Live Demo 
+[https://egrievance-and-redressal.netlify.app/](https://egrievance-and-redressal.netlify.app/)
 
 ## Stack highlights
 - Full stack: Angular 21 UI + Spring Boot 3.2.5 Reactive WebFlux services.
