@@ -23,6 +23,8 @@ import { AdminDepartmentsListComponent } from './admin/admin-departments-list.co
 import { CwAuthComponent } from './case-worker/cw-auth.component';
 import { CwDashboardComponent } from './case-worker/cw-dashboard.component';
 import { caseWorkerGuard } from './auth/case-worker.guard';
+import { StaffAnalyticsComponent } from './analytics/staff-analytics.component';
+import { staffGuard } from './auth/staff.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent, pathMatch: 'full' },
@@ -47,5 +49,6 @@ export const routes: Routes = [
   { path: 'do', component: DoDashboardComponent, canActivate: [departmentOfficerGuard] },
   { path: 'cw/login', component: CwAuthComponent, canActivate: [redirectAuthGuard] },
   { path: 'cw', component: CwDashboardComponent, canActivate: [caseWorkerGuard] },
+  { path: 'analytics', component: StaffAnalyticsComponent, canActivate: [staffGuard] },
   { path: '**', redirectTo: '' }
 ];

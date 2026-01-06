@@ -69,14 +69,18 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
         { label: 'View Departments', short: 'VD', route: '/admin/view-departments' },
         { label: 'Add Department', short: 'ADP', route: '/admin/departments' },
         { label: 'Department Officers', short: 'DO', route: '/admin/department-officers' },
-        { label: 'Supervisory Officers', short: 'SO', route: '/admin/supervisors' }
+        { label: 'Supervisory Officers', short: 'SO', route: '/admin/supervisors' },
+        { label: 'Analytics', short: 'AN', route: '/analytics' }
       ]
     }
   ],
   department_officer: [
     {
       title: 'General',
-      items: [{ label: 'Departments', short: 'D', route: '/departments' }]
+      items: [
+        { label: 'Departments', short: 'D', route: '/departments' },
+        { label: 'Analytics', short: 'AN', route: '/analytics' }
+      ]
     },
     {
       title: 'Department Officer',
@@ -86,7 +90,10 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
   supervisory_officer: [
     {
       title: 'General',
-      items: [{ label: 'Departments', short: 'D', route: '/departments' }]
+      items: [
+        { label: 'Departments', short: 'D', route: '/departments' },
+        { label: 'Analytics', short: 'AN', route: '/analytics' }
+      ]
     },
     {
       title: 'Supervisor',
@@ -96,7 +103,10 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
   case_worker: [
     {
       title: 'General',
-      items: [{ label: 'Departments', short: 'D', route: '/departments' }]
+      items: [
+        { label: 'Departments', short: 'D', route: '/departments' },
+        { label: 'Analytics', short: 'AN', route: '/analytics' }
+      ]
     },
     {
       title: 'Case Worker',
@@ -126,12 +136,27 @@ export class SidebarComponent {
 
   get displayName() {
     const profile = this.auth.getProfile();
-    return profile.name || 'Citizen';
+    return profile.name || this.roleLabel;
   }
 
   get displayEmail() {
     const profile = this.auth.getProfile();
-    return profile.email || 'Logged in';
+    return profile.email || this.roleLabel;
+  }
+
+  private get roleLabel() {
+    const roleKey = (this.auth.getRole() || 'citizen').toLowerCase();
+    const labels: Record<string, string> = {
+      admin: 'Admin',
+      supervisory_officer: 'Supervisory Officer',
+      supervisor: 'Supervisory Officer',
+      department_officer: 'Department Officer',
+      do: 'Department Officer',
+      case_worker: 'Case Worker',
+      cw: 'Case Worker',
+      citizen: 'Citizen'
+    };
+    return labels[roleKey] || 'Citizen';
   }
 
   get initials() {

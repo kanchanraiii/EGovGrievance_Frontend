@@ -35,6 +35,7 @@ export class AuthComponent {
   loginError = '';
   registerError = '';
   registerResult = false;
+  loginSubmitting = false;
 
   get loginValidation(): string {
     if (!this.loginForm.email.trim()) return 'Email is required.';
@@ -71,18 +72,22 @@ export class AuthComponent {
       this.cdr.markForCheck();
       return;
     }
+    this.loginSubmitting = true;
+    this.cdr.markForCheck();
     this.http.post<{ token?: string; role?: string }>(`${this.auth.getBaseUrl()}/auth/login`, this.loginForm).subscribe({
       next: res => {
         if (res?.token) {
           this.auth.setToken(res.token);
-          this.fetchProfileAndNavigate(res.token, res.role);
+          this.fetchProfileAndNavigate(res.token, res.role, 'citizen');
         } else {
           this.loginError = 'Login succeeded but token was missing.';
+          this.loginSubmitting = false;
           this.cdr.markForCheck();
         }
       },
       error: err => {
         this.loginError = this.readError(err);
+        this.loginSubmitting = false;
         this.cdr.markForCheck();
       }
     });
@@ -124,7 +129,7 @@ export class AuthComponent {
     this.router.navigateByUrl('/admin/login');
   }
 
-  private fetchProfileAndNavigate(token: string, fallbackRole?: string) {
+  private fetchProfileAndNavigate(token: string, fallbackRole?: string, expectedRole: string = 'citizen') {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http
       .get<{ name?: string; email?: string; role?: string }>(`${this.auth.getBaseUrl()}/auth/profile`, {
@@ -132,14 +137,31 @@ export class AuthComponent {
       })
       .subscribe({
       next: res => {
-        this.auth.setProfile({ name: res.name, email: res.email, role: res.role || fallbackRole });
+        const resolvedRole = (res.role || fallbackRole || 'citizen').toString().toLowerCase();
+        if (expectedRole && resolvedRole !== expectedRole) {
+          this.auth.clearToken();
+          this.auth.clearProfile();
+          this.loginError = 'Please use the staff login for this account.';
+          this.loginSubmitting = false;
+          this.cdr.markForCheck();
+          return;
+        }
+        this.auth.setProfile({ name: res.name, email: res.email, role: resolvedRole });
+        this.loginSubmitting = false;
         this.router.navigateByUrl('/dashboard');
       },
       error: () => {
-        if (fallbackRole) {
-          this.auth.setProfile({ role: fallbackRole });
+        const resolvedRole = (fallbackRole || 'citizen').toString().toLowerCase();
+        if (expectedRole && resolvedRole !== expectedRole) {
+          this.auth.clearToken();
+          this.auth.clearProfile();
+          this.loginError = 'Please use the staff login for this account.';
+          this.loginSubmitting = false;
+          this.cdr.markForCheck();
+          return;
         }
-        // even if profile fails, still navigate with token
+        this.auth.setProfile({ role: resolvedRole });
+        this.loginSubmitting = false;
         this.router.navigateByUrl('/dashboard');
       }
     });
