@@ -53,7 +53,7 @@ type NormalizedGrievance = {
             <p class="helper">Across {{ dataCount }} grievances.</p>
           </div>
           <div class="chart-wrap">
-            <canvas #statusCanvas></canvas>
+            <canvas #statusCanvas width="220" height="140"></canvas>
           </div>
           <div class="muted" *ngIf="!dataCount && !loading">No data to display.</div>
         </section>
@@ -64,7 +64,7 @@ type NormalizedGrievance = {
             <p class="helper">Top departments by grievance count.</p>
           </div>
           <div class="chart-wrap">
-            <canvas #deptCanvas></canvas>
+            <canvas #deptCanvas width="220" height="140"></canvas>
           </div>
           <div class="muted" *ngIf="!dataCount && !loading">No data to display.</div>
         </section>
@@ -76,7 +76,7 @@ type NormalizedGrievance = {
           <p class="helper">Submissions per day.</p>
         </div>
         <div class="chart-wrap">
-          <canvas #trendCanvas></canvas>
+          <canvas #trendCanvas width="220" height="140"></canvas>
         </div>
         <div class="muted" *ngIf="!dataCount && !loading">No data to display.</div>
       </section>
@@ -89,18 +89,18 @@ type NormalizedGrievance = {
     .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;color:var(--accent-2);margin:0 0 .25rem}
     h1{margin:0 0 .25rem;font-size:1.6rem}
     .subtitle{margin:0;color:var(--muted);font-size:.95rem}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.85rem}
-    .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:.75rem;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 8px 14px rgba(28,39,56,0.08)}
-    .card-head h2{margin:0;font-size:1rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.75rem}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:.65rem;display:flex;flex-direction:column;gap:.5rem;box-shadow:0 7px 12px rgba(28,39,56,0.08)}
+    .card-head h2{margin:0;font-size:.98rem}
     .helper{margin:0;color:var(--muted);font-size:.9rem}
     .actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
-    .button{border:none;border-radius:999px;background:var(--accent);color:#fff;padding:.5rem 1rem;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(31,79,147,0.18);font-size:.88rem}
+    .button{border:none;border-radius:999px;background:var(--accent);color:#fff;padding:.45rem .9rem;font-weight:700;cursor:pointer;box-shadow:0 7px 16px rgba(31,79,147,0.18);font-size:.86rem}
     .button.ghost{background:#eef2fb;color:var(--accent);box-shadow:none;border:1px solid rgba(31,79,147,0.2)}
     .button[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none}
-    .response{border-radius:12px;padding:.6rem .75rem;font-size:.88rem}
+    .response{border-radius:12px;padding:.55rem .7rem;font-size:.86rem}
     .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
     .muted{color:var(--muted);font-size:.9rem}
-    .chart-wrap{min-height:160px;display:flex;align-items:center;justify-content:center}
+    .chart-wrap{min-height:120px;max-height:180px;display:flex;align-items:center;justify-content:center}
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
