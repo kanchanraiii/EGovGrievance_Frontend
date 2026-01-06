@@ -15,13 +15,15 @@ type NavSection = { title: string; items: NavItem[] };
 
 const PUBLIC_NAV: NavSection[] = [
   {
-    title: 'General',
-    items: [
-      { label: 'Home', short: 'H', route: '/', exact: true },
-      { label: 'About Us', short: 'A', route: '/about' }
-    ]
-  }
-];
+      title: 'General',
+      items: [
+        { label: 'Home', short: 'H', route: '/', exact: true },
+        { label: 'About Us', short: 'A', route: '/about' },
+        { label: 'Departments', short: 'D', route: '/departments' },
+        { label: 'FAQ', short: 'F', route: '/faq' }
+      ]
+    }
+  ];
 
 const NAV_CONFIG: Record<string, NavSection[]> = {
   citizen: [
@@ -29,15 +31,27 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
       title: 'General',
       items: [
         { label: 'Home', short: 'H', route: '/', exact: true },
-        { label: 'About Us', short: 'A', route: '/about' }
+        { label: 'About Us', short: 'A', route: '/about' },
+        { label: 'Departments', short: 'D', route: '/departments' },
+        { label: 'FAQ', short: 'F', route: '/faq' }
       ]
     },
     {
       title: 'Citizen',
-      items: [{ label: 'Grievance', short: 'G', route: '/dashboard' }]
+      items: [
+        { label: 'Lodge a grievance', short: 'LG', route: '/dashboard', fragment: 'lodge-form' },
+        { label: 'My grievances', short: 'MG', route: '/dashboard', fragment: 'my-grievances' }
+      ]
     }
   ],
   staff: [
+    {
+      title: 'General',
+      items: [
+        { label: 'Departments', short: 'D', route: '/departments' },
+        { label: 'FAQ', short: 'F', route: '/faq' }
+      ]
+    },
     {
       title: 'Staff',
       items: [
@@ -52,7 +66,8 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
       title: 'Admin',
       items: [
         { label: 'Admin Console', short: 'AD', route: '/admin' },
-        { label: 'Departments', short: 'D', route: '/admin/departments' },
+        { label: 'View Departments', short: 'VD', route: '/admin/view-departments' },
+        { label: 'Add Department', short: 'ADP', route: '/admin/departments' },
         { label: 'Department Officers', short: 'DO', route: '/admin/department-officers' },
         { label: 'Supervisory Officers', short: 'SO', route: '/admin/supervisors' }
       ]
@@ -60,17 +75,29 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
   ],
   department_officer: [
     {
+      title: 'General',
+      items: [{ label: 'Departments', short: 'D', route: '/departments' }]
+    },
+    {
       title: 'Department Officer',
       items: [{ label: 'Officer Console', short: 'DO', route: '/do' }]
     }
   ],
   supervisory_officer: [
     {
+      title: 'General',
+      items: [{ label: 'Departments', short: 'D', route: '/departments' }]
+    },
+    {
       title: 'Supervisor',
       items: [{ label: 'Supervise Grievances', short: 'SG', route: '/supervisor' }]
     }
   ],
   case_worker: [
+    {
+      title: 'General',
+      items: [{ label: 'Departments', short: 'D', route: '/departments' }]
+    },
     {
       title: 'Case Worker',
       items: [{ label: 'Assigned Grievances', short: 'CW', route: '/cw' }]

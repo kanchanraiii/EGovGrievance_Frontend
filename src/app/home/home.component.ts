@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
@@ -49,6 +49,7 @@ export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   grievances: Grievance[] = [];
@@ -82,6 +83,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.fetchDepartments();
     this.loadMyGrievances();
+    this.route.fragment.subscribe(fragment => this.handleFragment(fragment));
   }
 
   toggleLodge() {
@@ -121,7 +123,7 @@ export class HomeComponent implements OnInit {
   fetchDepartments() {
     this.departmentsLoading = true;
     this.departmentsError = '';
-    this.http.get<Department[]>('http://localhost:3006/stateGovernmentDepartments').subscribe({
+    this.http.get<Department[]>('http://20.244.2.109:3006/stateGovernmentDepartments').subscribe({
       next: res => {
         this.departments = Array.isArray(res) ? res : [];
         this.departmentsLoading = false;
@@ -258,6 +260,18 @@ export class HomeComponent implements OnInit {
   logout() {
     this.auth.clearToken();
     this.router.navigateByUrl('/auth');
+  }
+
+  private handleFragment(fragment: string | null) {
+    if (fragment === 'lodge-form') {
+      this.showLodgeForm.set(true);
+      queueMicrotask(() => document.getElementById('lodge-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      return;
+    }
+    if (fragment === 'my-grievances') {
+      this.showLodgeForm.set(false);
+      queueMicrotask(() => document.getElementById('my-grievances')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
   }
 
   private isFormValid() {

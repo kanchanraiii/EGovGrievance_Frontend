@@ -17,14 +17,31 @@
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   color: var(--accent-2);
-  margin: 0 0 0.5rem;
+  margin-bottom: -0.05rem;
+  font-weight: 800;
+  margin-left: 15px;
 }
 h1 {
   margin: 0 0 0.75rem;
   font-size: 2.4rem;
   color: var(--ink);
+}
+.title-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+  margin: 0 0 0.75rem;
+}
+.title-with-logo h1 {
+  margin: 0;
+  line-height: 1;
+}
+.hero-logo {
+  height: 9rem;
+  width: auto;
 }
 .lead {
   margin: 0 0 1rem;
@@ -147,6 +164,9 @@ h1 {
   }
   h1 {
     font-size: 2rem;
+  }
+  .hero-logo {
+    height: 2.5rem;
   }
   .flow {
     grid-template-columns: 1fr;

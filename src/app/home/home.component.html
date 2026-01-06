@@ -2,7 +2,10 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">My Grievances</p>
-      <h1>Track and update your submissions</h1>
+      <div class="title-with-logo">
+        <img class="home-logo" src="/logo.svg" alt="Portal logo" />
+        <h1>Track and update your submissions</h1>
+      </div>
       <p class="subtitle">
         View all your grievances in one place. Open a grievance to see details or share a rating once it's resolved.
       </p>
@@ -13,6 +16,7 @@
   </header>
 
   <div class="layout">
+    <div id="lodge-form"></div>
     <section class="card lodge" *ngIf="showLodgeForm()">
       <div class="card-head">
         <h2>Lodge a grievance</h2>
@@ -86,7 +90,8 @@
       <div class="response success" *ngIf="grievanceResult">Grievance submitted successfully.</div>
     </section>
 
-    <section class="card list">
+    <div id="my-grievances"></div>
+    <section class="card list" *ngIf="!showLodgeForm()">
       <div class="card-head">
         <h2>Your grievances</h2>
         <p class="helper">Select any grievance to view full details and rate it.</p>

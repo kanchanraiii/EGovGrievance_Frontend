@@ -1,0 +1,60 @@
+<section class="page-frame departments">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Directory</p>
+      <h1>Departments</h1>
+      <p class="subtitle">Browse state and central departments available on the platform.</p>
+    </div>
+    <button class="button ghost" type="button" (click)="reload()" [disabled]="stateLoading || centralLoading">
+      Refresh
+    </button>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>State Departments</h2>
+          <p class="helper">Listed from the state registry.</p>
+        </div>
+        <span class="pill">{{ stateDepartments.length }} listed</span>
+      </div>
+      <div class="scroll-area">
+        <div class="loading" *ngIf="stateLoading">Loading state departments...</div>
+        <div class="error" *ngIf="stateError">{{ stateError }}</div>
+        <div class="empty" *ngIf="!stateLoading && !stateError && !stateDepartments.length">
+          No state departments found.
+        </div>
+        <div class="dept-list" *ngIf="!stateLoading && !stateError && stateDepartments.length">
+          <article class="dept-card" *ngFor="let dept of stateDepartments; trackBy: trackDept">
+            <div class="dept-title">{{ getName(dept) }}</div>
+            <div class="dept-meta" *ngIf="getLevel(dept)">{{ getLevel(dept) }}</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>Central Departments</h2>
+          <p class="helper">Listed from the central registry.</p>
+        </div>
+        <span class="pill">{{ centralDepartments.length }} listed</span>
+      </div>
+      <div class="scroll-area">
+        <div class="loading" *ngIf="centralLoading">Loading central departments...</div>
+        <div class="error" *ngIf="centralError">{{ centralError }}</div>
+        <div class="empty" *ngIf="!centralLoading && !centralError && !centralDepartments.length">
+          No central departments found.
+        </div>
+        <div class="dept-list" *ngIf="!centralLoading && !centralError && centralDepartments.length">
+          <article class="dept-card" *ngFor="let dept of centralDepartments; trackBy: trackDept">
+            <div class="dept-title">{{ getName(dept) }}</div>
+            <div class="dept-meta" *ngIf="getLevel(dept)">{{ getLevel(dept) }}</div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+<section class="page-frame faq">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Support</p>
+      <h1>Frequently Asked Questions</h1>
+      <p class="subtitle">Quick answers to common questions about lodging and tracking grievances.</p>
+    </div>
+  </header>
+
+  <div class="faq-list">
+    <article class="faq-card" *ngFor="let item of faqs; trackBy: trackFaq">
+      <h2>{{ item.question }}</h2>
+      <p>{{ item.answer }}</p>
+    </article>
+  </div>
+</section>

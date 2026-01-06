@@ -1,0 +1,161 @@
+.departments {
+  min-height: calc(100vh - 3rem);
+  background: var(--panel);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.9rem;
+  color: var(--accent-2);
+  margin: 0.6 0 0.5rem;
+  font-weight: 600;
+}
+
+h1 {
+  margin: 0 0 0.35rem;
+  font-size: 2rem;
+  color: var(--ink);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  max-width: 720px;
+}
+
+.button {
+  border: 1px solid rgba(31, 79, 147, 0.2);
+  border-radius: 999px;
+  background: #eef2fb;
+  color: var(--accent);
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 10px 24px rgba(28, 39, 56, 0.06);
+}
+
+.dept-card:hover{
+  border-color: #ffe6ac;
+  background-color: #fcf7eb;
+  border-width: 2px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.helper {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  background: #eef2fb;
+  color: #1f4f93;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.scroll-area {
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.dept-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.dept-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(31, 79, 147, 0.08);
+}
+
+.dept-title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.dept-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.loading,
+.error,
+.empty {
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #f8f9ff;
+  color: var(--muted);
+  margin: 0.2rem 0;
+}
+
+.error {
+  background: #fff1f2;
+  color: #9f1239;
+  border-color: #fecdd3;
+}
+
+@media (max-width: 720px) {
+  .departments {
+    padding: 1.25rem;
+  }
+}

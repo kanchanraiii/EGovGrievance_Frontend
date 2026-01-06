@@ -34,6 +34,21 @@ h1 {
   font-size: 2rem;
   color: var(--ink);
 }
+.title-with-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+  margin: 0 0 0.35rem;
+}
+.title-with-logo h1 {
+  margin: 0;
+  line-height: 1.05;
+}
+.home-logo {
+  height: 3rem;
+  width: auto;
+}
 
 .subtitle {
   margin: 0;
@@ -415,6 +430,9 @@ h1 {
 @media (max-width: 720px) {
   .page-frame {
     padding: 1.25rem;
+  }
+  .home-logo {
+    height: 2.5rem;
   }
 
   .grievance-row {

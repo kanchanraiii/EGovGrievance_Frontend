@@ -28,7 +28,7 @@
 
     <form *ngIf="mode === 'login'" (ngSubmit)="loginCitizen()" class="form">
       <label class="field-label">Email</label>
-      <input
+      <input placeholder="yourmail@example.com"
         class="field"
         type="email"
         [(ngModel)]="loginForm.email"
@@ -36,7 +36,7 @@
         (ngModelChange)="onLoginChange()"
       />
       <label class="field-label">Password</label>
-      <input
+      <input placeholder="Enter a strong password"
         class="field"
         type="password"
         [(ngModel)]="loginForm.password"
@@ -50,7 +50,8 @@
 
     <form *ngIf="mode === 'signup'" (ngSubmit)="registerCitizen()" class="form">
       <label class="field-label">Full name</label>
-      <input
+      <input 
+        placeholder="John Doe"
         class="field"
         [(ngModel)]="registerForm.fullName"
         name="fullName"
@@ -58,6 +59,7 @@
       />
       <label class="field-label">Email</label>
       <input
+        placeholder="yourmail@example.com"
         class="field"
         type="email"
         [(ngModel)]="registerForm.email"
@@ -66,6 +68,7 @@
       />
       <label class="field-label">Phone</label>
       <input
+        placeholder="Your 10 digit phone number"
         class="field"
         [(ngModel)]="registerForm.phone"
         name="phone"
@@ -73,6 +76,7 @@
       />
       <label class="field-label">Password</label>
       <input
+        placeholder="Enter a strong password"
         class="field"
         type="password"
         [(ngModel)]="registerForm.password"
