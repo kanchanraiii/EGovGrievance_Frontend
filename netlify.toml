@@ -1,0 +1,18 @@
+[[redirects]]
+  from = "/api/*"
+  to = "http://20.244.2.109:9005/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/departments-api/*"
+  to = "http://20.244.2.109:3006/:splat"
+  status = 200
+  force = true
+
+# Storage service routed via gateway (/storage/**).
+[[redirects]]
+  from = "/storage-api/*"
+  to = "http://20.244.2.109:9005/storage/:splat"
+  status = 200
+  force = true
