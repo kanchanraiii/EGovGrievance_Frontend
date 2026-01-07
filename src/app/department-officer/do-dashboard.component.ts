@@ -261,7 +261,14 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
           </div>
           <div>
             <label class="field-label">Password</label>
-            <input class="field" type="password" [(ngModel)]="cwForm.password" />
+            <input
+              class="field"
+              type="password"
+              [(ngModel)]="cwForm.password"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$"
+              title="Min 8 chars with upper, lower, number, and special character"
+            />
+            <div class="inline-help">Min 8 chars; include uppercase, lowercase, number, and special character.</div>
           </div>
           <div>
             <label class="field-label">Department ID</label>
@@ -546,6 +553,11 @@ export class DoDashboardComponent implements OnInit {
       this.cdr.markForCheck();
       return;
     }
+    if (!this.isPasswordStrong(this.cwForm.password)) {
+      this.cwError = 'Password must be 8+ chars with upper, lower, number, and special character.';
+      this.cdr.markForCheck();
+      return;
+    }
     this.cwSubmitting = true;
     this.cdr.markForCheck();
     this.http
@@ -651,6 +663,10 @@ export class DoDashboardComponent implements OnInit {
     if (normalized === 'resolved' || normalized === 'closed') return 'resolved';
     if (normalized === 'submitted' || normalized === 'in_progress' || normalized === 'in-progress') return 'in-progress';
     return '';
+  }
+
+  private isPasswordStrong(password: string) {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(password || '');
   }
 
   private isResolved(status?: string) {

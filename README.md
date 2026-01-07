@@ -16,6 +16,12 @@ Track issues, submit new grievances, and follow up on resolutions in one place.
 - Lifecycle: submitted → assigned → dept_review → in_progress → resolved → closed → escalated.
 - Responsibilities: DO/CW investigate and resolve; SO monitors deadlines and escalations; Admin manages departments/users; Citizens submit/track grievances.
 
+## Database design
+<p align="center">
+  <img src="images/dbdesign.png" alt="Database Design Diagram" width="800"/>
+  <br/>
+  <sub>Figure: High-level data model for services</sub>
+</p>
 
 ## Citizen Usage
 <p align="center">
