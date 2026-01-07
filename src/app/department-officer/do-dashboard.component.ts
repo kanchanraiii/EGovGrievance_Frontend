@@ -287,8 +287,8 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
     .response.success{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
     .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
     .response.warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
-    .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;margin-top:.35rem}
-    .grievance-card{border:1px solid var(--border);border-radius:14px;padding:.9rem;background:#fff;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 12px 22px rgba(16,24,40,0.08)}
+    .card-grid{display:flex;flex-direction:column;gap:.75rem;margin-top:.35rem}
+    .grievance-card{border:1px solid var(--border);border-radius:14px;padding:.9rem;background:#fff;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 12px 22px rgba(16,24,40,0.08);width:100%}
     .grievance-card.escalated{border-color:#fca5a5;background:#fff1f2}
     .grievance-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.65rem}
     .id{font-weight:800;font-size:1rem}
