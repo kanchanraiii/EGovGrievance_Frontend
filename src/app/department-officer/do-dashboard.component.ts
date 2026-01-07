@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 
 type CaseWorker = { id?: string; fullName?: string; email?: string; phone?: string; departmentId?: string };
@@ -126,7 +127,7 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         <div class="response warn" *ngIf="!caseWorkersLoading && !caseWorkers.length && !caseWorkersError">No case workers found.</div>
       </section>
 
-      <section class="card">
+      <section class="card" *ngIf="showGrievances">
         <div class="card-head">
           <h2>Department grievances</h2>
           <p class="helper">See all grievances for your department (scoped by your login).</p>
@@ -324,6 +325,7 @@ export class DoDashboardComponent implements OnInit {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
 
   assignForm = { grievanceId: '', assignedTo: '' };
   assignSubmitting = false;
@@ -351,6 +353,7 @@ export class DoDashboardComponent implements OnInit {
   attachmentsById: Record<string, FileMeta[]> = {};
   attachmentsLoading: Record<string, boolean> = {};
   attachmentsError: Record<string, string> = {};
+  showGrievances = false;
 
   cwForm = { fullName: '', email: '', phone: '', password: '', departmentId: '' };
   cwSubmitting = false;
@@ -360,7 +363,7 @@ export class DoDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCaseWorkers();
-    this.loadDepartmentGrievances();
+    this.route.fragment.subscribe(fragment => this.handleFragment(fragment));
   }
 
   assignGrievance() {
@@ -606,6 +609,14 @@ export class DoDashboardComponent implements OnInit {
           error: () => {}
         });
     });
+  }
+
+  private handleFragment(fragment: string | null) {
+    this.showGrievances = fragment === 'grievances';
+    if (this.showGrievances) {
+      this.loadDepartmentGrievances();
+    }
+    this.cdr.markForCheck();
   }
 
   private authHeaders() {

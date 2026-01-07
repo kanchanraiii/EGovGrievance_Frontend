@@ -84,7 +84,10 @@ const NAV_CONFIG: Record<string, NavSection[]> = {
     },
     {
       title: 'Department Officer',
-      items: [{ label: 'Officer Console', short: 'DO', route: '/do' }]
+      items: [
+        { label: 'Officer Console', short: 'DO', route: '/do' },
+        { label: 'Grievances', short: 'GR', route: '/do', fragment: 'grievances' }
+      ]
     }
   ],
   supervisory_officer: [
