@@ -231,7 +231,8 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
     .id{font-weight:700}
     .muted{color:var(--muted);font-size:.9rem}
     .status{border-radius:999px;padding:.25rem .6rem;font-size:.8rem;font-weight:700;background:#eef2fb;color:#1f4f93;border:1px solid rgba(31,79,147,0.2)}
-    .status.submitted{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+    .status.submitted,.status.in-progress{background:#fff7ed;color:#b45309;border-color:#fed7aa}
+    .status.resolved{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .chips{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
     .chip{border:1px solid var(--border);border-radius:999px;padding:.2rem .6rem;font-size:.8rem;color:var(--muted);background:#f8fafc}
@@ -420,7 +421,8 @@ export class SupervisorDashboardComponent implements OnInit, OnDestroy {
   statusClass(status?: string) {
     const normalized = (status || '').toLowerCase();
     if (normalized === 'escalated') return 'escalated';
-    if (normalized === 'submitted') return 'submitted';
+    if (normalized === 'resolved' || normalized === 'closed') return 'resolved';
+    if (normalized === 'submitted' || normalized === 'in_progress' || normalized === 'in-progress') return 'in-progress';
     return '';
   }
 

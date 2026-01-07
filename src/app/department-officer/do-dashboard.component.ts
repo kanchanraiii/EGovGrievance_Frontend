@@ -141,13 +141,13 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         </div>
         <div class="response error" *ngIf="deptGrievancesError">{{ deptGrievancesError }}</div>
         <div class="card-grid" *ngIf="deptGrievances.length">
-          <article class="grievance-card" *ngFor="let g of deptGrievances; trackBy: trackGrievance" [class.escalated]="g.status === 'ESCALATED'">
+          <article class="grievance-card" *ngFor="let g of paginatedDeptGrievances; trackBy: trackGrievance" [class.escalated]="g.status === 'ESCALATED'">
             <header class="grievance-head">
               <div>
                 <div class="id">#{{ g.id || g.grievanceId }}</div>
                 <div class="muted">Dept: {{ g.departmentId || '—' }}</div>
               </div>
-              <span class="status submitted">{{ g.status || 'N/A' }}</span>
+              <span class="status" [ngClass]="statusClass(g.status)">{{ formatStatus(g.status) }}</span>
             </header>
             <p class="description">{{ g.description || 'No description provided.' }}</p>
             <div class="meta">
@@ -171,6 +171,11 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
               </ul>
             </div>
           </article>
+        </div>
+        <div class="pagination" *ngIf="deptPageCount > 1">
+          <button class="button ghost" type="button" (click)="changePage('dept', -1)" [disabled]="deptPage === 1">Prev</button>
+          <span class="muted">Page {{ deptPage }} of {{ deptPageCount }}</span>
+          <button class="button ghost" type="button" (click)="changePage('dept', 1)" [disabled]="deptPage === deptPageCount">Next</button>
         </div>
         <div class="response warn" *ngIf="!deptGrievancesLoading && !deptGrievances.length && !deptGrievancesError">No grievances found for your department.</div>
       </section>
@@ -198,13 +203,13 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         </div>
         <div class="response error" *ngIf="cwGrievancesError">{{ cwGrievancesError }}</div>
         <div class="card-grid" *ngIf="cwGrievances.length">
-          <article class="grievance-card" *ngFor="let g of cwGrievances; trackBy: trackGrievance">
+          <article class="grievance-card" *ngFor="let g of paginatedCwGrievances; trackBy: trackGrievance">
             <header class="grievance-head">
               <div>
                 <div class="id">#{{ g.id }}</div>
                 <div class="muted">Dept: {{ g.departmentId || '—' }}</div>
               </div>
-              <span class="status submitted">{{ g.status || 'N/A' }}</span>
+              <span class="status" [ngClass]="statusClass(g.status)">{{ formatStatus(g.status) }}</span>
             </header>
             <p class="description">{{ g.description || 'No description provided.' }}</p>
             <div class="meta">
@@ -227,6 +232,11 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
               </ul>
             </div>
           </article>
+        </div>
+        <div class="pagination" *ngIf="cwPageCount > 1">
+          <button class="button ghost" type="button" (click)="changePage('cw', -1)" [disabled]="cwPage === 1">Prev</button>
+          <span class="muted">Page {{ cwPage }} of {{ cwPageCount }}</span>
+          <button class="button ghost" type="button" (click)="changePage('cw', 1)" [disabled]="cwPage === cwPageCount">Next</button>
         </div>
         <div class="response warn" *ngIf="!cwGrievancesLoading && !cwGrievances.length && !cwGrievancesError">No grievances for this case worker.</div>
       </section>
@@ -298,7 +308,8 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
     .id{font-weight:800;font-size:1rem}
     .muted{color:var(--muted);font-size:.95rem}
     .status{border-radius:999px;padding:.3rem .7rem;font-size:.82rem;font-weight:700;background:#eef2fb;color:#1f4f93;border:1px solid rgba(31,79,147,0.2)}
-    .status.submitted{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+    .status.submitted,.status.in-progress{background:#fff7ed;color:#b45309;border-color:#fed7aa}
+    .status.resolved{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .description{margin:0;font-size:1rem;line-height:1.45}
     .meta{display:flex;flex-wrap:wrap;gap:.55rem;font-size:.9rem;color:var(--muted)}
@@ -349,6 +360,24 @@ export class DoDashboardComponent implements OnInit {
   cwGrievancesLoading = false;
   cwGrievancesError = '';
 
+  get paginatedDeptGrievances() {
+    const start = (this.deptPage - 1) * this.pageSize;
+    return this.deptGrievances.slice(start, start + this.pageSize);
+  }
+
+  get paginatedCwGrievances() {
+    const start = (this.cwPage - 1) * this.pageSize;
+    return this.cwGrievances.slice(start, start + this.pageSize);
+  }
+
+  get deptPageCount() {
+    return Math.max(1, Math.ceil(this.deptGrievances.length / this.pageSize));
+  }
+
+  get cwPageCount() {
+    return Math.max(1, Math.ceil(this.cwGrievances.length / this.pageSize));
+  }
+
   deptGrievances: Grievance[] = [];
   deptGrievancesLoading = false;
   deptGrievancesError = '';
@@ -356,6 +385,9 @@ export class DoDashboardComponent implements OnInit {
   attachmentsById: Record<string, FileMeta[]> = {};
   attachmentsLoading: Record<string, boolean> = {};
   attachmentsError: Record<string, string> = {};
+  deptPage = 1;
+  cwPage = 1;
+  pageSize = 5;
   showGrievances = false;
 
   cwForm = { fullName: '', email: '', phone: '', password: '', departmentId: '' };
@@ -464,6 +496,7 @@ export class DoDashboardComponent implements OnInit {
       .subscribe({
         next: res => {
           this.deptGrievances = Array.isArray(res) ? res : [];
+          this.deptPage = 1;
           this.loadFeedbackForResolved(this.deptGrievances);
           this.deptGrievancesLoading = false;
           this.cdr.markForCheck();
@@ -492,6 +525,7 @@ export class DoDashboardComponent implements OnInit {
       .subscribe({
         next: res => {
           this.cwGrievances = Array.isArray(res) ? res : [];
+          this.cwPage = 1;
           this.loadFeedbackForResolved(this.cwGrievances);
           this.cwGrievancesLoading = false;
           this.cdr.markForCheck();
@@ -591,6 +625,32 @@ export class DoDashboardComponent implements OnInit {
 
   getId(item: Grievance) {
     return item.id || item.grievanceId || '';
+  }
+
+  changePage(kind: 'dept' | 'cw', delta: number) {
+    if (kind === 'dept') {
+      const next = this.deptPage + delta;
+      if (next < 1 || next > this.deptPageCount) return;
+      this.deptPage = next;
+    } else {
+      const next = this.cwPage + delta;
+      if (next < 1 || next > this.cwPageCount) return;
+      this.cwPage = next;
+    }
+    this.cdr.markForCheck();
+  }
+
+  formatStatus(status?: string) {
+    if (!status) return 'N/A';
+    return status.replace(/_/g, ' ').toUpperCase();
+  }
+
+  statusClass(status?: string) {
+    const normalized = (status || '').toLowerCase();
+    if (normalized === 'escalated') return 'escalated';
+    if (normalized === 'resolved' || normalized === 'closed') return 'resolved';
+    if (normalized === 'submitted' || normalized === 'in_progress' || normalized === 'in-progress') return 'in-progress';
+    return '';
   }
 
   private isResolved(status?: string) {

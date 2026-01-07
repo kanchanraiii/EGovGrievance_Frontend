@@ -58,14 +58,14 @@ type FileMeta = {
             <span>Loading assigned grievances...</span>
           </div>
           <ul class="grievance-list" *ngIf="!assignedLoading && assignedList.length">
-            <li *ngFor="let g of assignedList; trackBy: trackGrievance">
+            <li *ngFor="let g of paginatedAssigned; trackBy: trackGrievance">
               <div class="row">
                 <div>
                   <div class="id">#{{ g.id }}</div>
                   <div class="muted">Dept: {{ g.departmentId || '—' }}</div>
                 </div>
                 <div class="chips">
-                  <span class="status" [class.escalated]="g.escalated" [class.submitted]="g.status === 'SUBMITTED'">{{ g.status || 'N/A' }}</span>
+                  <span class="status" [ngClass]="statusClass(g.status, g.escalated)">{{ formatStatus(g.status) }}</span>
                 </div>
               </div>
               <p class="description">{{ g.description || 'No description provided.' }}</p>
@@ -91,6 +91,11 @@ type FileMeta = {
               </div>
             </li>
           </ul>
+          <div class="pagination" *ngIf="totalPages > 1">
+            <button class="button ghost" type="button" (click)="changePage(-1)" [disabled]="page === 1">Prev</button>
+            <span class="muted">Page {{ page }} of {{ totalPages }}</span>
+            <button class="button ghost" type="button" (click)="changePage(1)" [disabled]="page === totalPages">Next</button>
+          </div>
           <div class="response warn" *ngIf="!assignedLoading && !assignedList.length && !assignedError">No assigned grievances.</div>
         </section>
 
@@ -168,7 +173,8 @@ type FileMeta = {
     .id{font-weight:800;font-size:1rem}
     .muted{color:var(--muted);font-size:.95rem}
     .status{border-radius:999px;padding:.3rem .7rem;font-size:.82rem;font-weight:700;background:#eef2fb;color:#1f4f93;border:1px solid rgba(31,79,147,0.2)}
-    .status.submitted{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+    .status.submitted,.status.in-progress{background:#fff7ed;color:#b45309;border-color:#fed7aa}
+    .status.resolved{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .chips{display:flex;gap:.4rem;flex-wrap:wrap}
     .description{margin:0;font-size:1rem;line-height:1.45}
@@ -181,6 +187,7 @@ type FileMeta = {
     .attachment-link{background:none;border:none;color:var(--accent);cursor:pointer;text-align:left;padding:0}
     .inline-help.error{color:#b91c1c;font-size:.85rem}
     .inline-help.warn{color:#b45309}
+    .pagination{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.35rem}
     @keyframes spin{to{transform:rotate(360deg)}}
     @media (max-width:768px){
       .admin-shell{padding:1rem}
@@ -209,6 +216,8 @@ export class CwDashboardComponent implements OnInit {
   attachmentsById: Record<string, FileMeta[]> = {};
   attachmentsLoading: Record<string, boolean> = {};
   attachmentsError: Record<string, string> = {};
+  pageSize = 5;
+  page = 1;
 
   statusForm = { grievanceId: '', status: 'IN_PROGRESS', updatedBy: '', remarks: '' };
   statusSubmitting = false;
@@ -217,6 +226,28 @@ export class CwDashboardComponent implements OnInit {
 
   get selectedGrievance(): Grievance | undefined {
     return this.assignedList.find(g => (g.id || g.grievanceId) === this.statusForm.grievanceId);
+  }
+
+  get paginatedAssigned() {
+    const start = (this.page - 1) * this.pageSize;
+    return this.assignedList.slice(start, start + this.pageSize);
+  }
+
+  get totalPages() {
+    return Math.max(1, Math.ceil(this.assignedList.length / this.pageSize));
+  }
+
+  formatStatus(status?: string) {
+    if (!status) return 'N/A';
+    return status.replace(/_/g, ' ').toUpperCase();
+  }
+
+  statusClass(status?: string, escalated?: boolean) {
+    const normalized = (status || '').toLowerCase();
+    if (escalated || normalized === 'escalated') return 'escalated';
+    if (normalized === 'resolved' || normalized === 'closed') return 'resolved';
+    if (normalized === 'submitted' || normalized === 'in_progress' || normalized === 'in-progress') return 'in-progress';
+    return '';
   }
 
   ngOnInit(): void {
@@ -231,6 +262,7 @@ export class CwDashboardComponent implements OnInit {
     this.http.get<Grievance[]>(`${this.auth.getBaseUrl()}/grievance-service/api/grievances/my-assigned`, { headers: this.authHeaders() }).subscribe({
       next: res => {
         this.assignedList = Array.isArray(res) ? res : [];
+        this.page = 1;
         if (this.assignedList.length) {
           const current = this.statusForm.grievanceId;
           const exists = this.assignedList.some(g => (g.id || g.grievanceId) === current);
@@ -294,6 +326,13 @@ export class CwDashboardComponent implements OnInit {
   isSelectedEscalated() {
     const status = this.selectedGrievance?.status || '';
     return status.toLowerCase() === 'escalated';
+  }
+
+  changePage(delta: number) {
+    const next = this.page + delta;
+    if (next < 1 || next > this.totalPages) return;
+    this.page = next;
+    this.cdr.markForCheck();
   }
 
   loadAttachments(grievanceId: string) {
