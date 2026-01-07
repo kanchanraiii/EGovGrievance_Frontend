@@ -17,6 +17,7 @@ type Grievance = {
 };
 
 type Feedback = { grievanceId?: string; comments?: string; score?: number };
+type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?: string };
 
 @Component({
   selector: 'app-do-dashboard',
@@ -152,6 +153,19 @@ type Feedback = { grievanceId?: string; comments?: string; score?: number };
               <span *ngIf="g.remarks">Remarks: {{ g.remarks }}</span>
             </div>
             <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">Feedback: {{ feedbackById[getId(g)]?.comments }}</div>
+            <div class="attachments">
+              <button class="link-button" type="button" (click)="loadAttachments(getId(g))">
+                {{ attachmentsLoading[getId(g)] ? 'Loading attachments...' : 'Load attachments' }}
+              </button>
+              <div class="inline-help error" *ngIf="attachmentsError[getId(g)]">{{ attachmentsError[getId(g)] }}</div>
+              <ul class="attachment-list" *ngIf="attachmentsById[getId(g)]?.length">
+                <li *ngFor="let file of attachmentsById[getId(g)]">
+                  <button class="attachment-link" type="button" (click)="downloadAttachment(file)">
+                    {{ file.fileName || file.id || 'Attachment' }}
+                  </button>
+                </li>
+              </ul>
+            </div>
           </article>
         </div>
         <div class="response warn" *ngIf="!deptGrievancesLoading && !deptGrievances.length && !deptGrievancesError">No grievances found for your department.</div>
@@ -195,6 +209,19 @@ type Feedback = { grievanceId?: string; comments?: string; score?: number };
               <span *ngIf="g.remarks">Remarks: {{ g.remarks }}</span>
             </div>
             <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">Feedback: {{ feedbackById[getId(g)]?.comments }}</div>
+            <div class="attachments">
+              <button class="link-button" type="button" (click)="loadAttachments(getId(g))">
+                {{ attachmentsLoading[getId(g)] ? 'Loading attachments...' : 'Load attachments' }}
+              </button>
+              <div class="inline-help error" *ngIf="attachmentsError[getId(g)]">{{ attachmentsError[getId(g)] }}</div>
+              <ul class="attachment-list" *ngIf="attachmentsById[getId(g)]?.length">
+                <li *ngFor="let file of attachmentsById[getId(g)]">
+                  <button class="attachment-link" type="button" (click)="downloadAttachment(file)">
+                    {{ file.fileName || file.id || 'Attachment' }}
+                  </button>
+                </li>
+              </ul>
+            </div>
           </article>
         </div>
         <div class="response warn" *ngIf="!cwGrievancesLoading && !cwGrievances.length && !cwGrievancesError">No grievances for this case worker.</div>
@@ -271,6 +298,10 @@ type Feedback = { grievanceId?: string; comments?: string; score?: number };
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .description{margin:0;font-size:1rem;line-height:1.45}
     .meta{display:flex;flex-wrap:wrap;gap:.55rem;font-size:.9rem;color:var(--muted)}
+    .attachments{display:flex;flex-direction:column;gap:.35rem}
+    .attachment-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.25rem}
+    .attachment-link{background:none;border:none;color:var(--accent);cursor:pointer;text-align:left;padding:0}
+    .inline-help.error{color:#b91c1c;font-size:.85rem}
     .feedback{font-size:.9rem;color:#0f172a;background:#f1f5f9;border-radius:10px;padding:.5rem .6rem;border:1px solid #e2e8f0}
     .spinner{width:16px;height:16px;border:3px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -317,6 +348,9 @@ export class DoDashboardComponent implements OnInit {
   deptGrievancesLoading = false;
   deptGrievancesError = '';
   feedbackById: Record<string, Feedback> = {};
+  attachmentsById: Record<string, FileMeta[]> = {};
+  attachmentsLoading: Record<string, boolean> = {};
+  attachmentsError: Record<string, string> = {};
 
   cwForm = { fullName: '', email: '', phone: '', password: '', departmentId: '' };
   cwSubmitting = false;
@@ -501,6 +535,52 @@ export class DoDashboardComponent implements OnInit {
 
   trackGrievance(index: number, item: Grievance) {
     return item.id || item.grievanceId || index;
+  }
+
+  loadAttachments(grievanceId: string) {
+    if (!grievanceId) return;
+    this.attachmentsError[grievanceId] = '';
+    this.attachmentsLoading[grievanceId] = true;
+    this.http
+      .get<FileMeta[]>(`/storage-api/storage/grievance/${grievanceId}`, {
+        headers: this.authHeaders()
+      })
+      .subscribe({
+        next: res => {
+          this.attachmentsById[grievanceId] = Array.isArray(res) ? res : [];
+          this.attachmentsLoading[grievanceId] = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.attachmentsError[grievanceId] = this.readError(err);
+          this.attachmentsLoading[grievanceId] = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  downloadAttachment(file: FileMeta) {
+    const fileId = file.id;
+    if (!fileId) return;
+    const url = `/storage-api/storage/${fileId}`;
+    this.http
+      .get(url, { headers: this.authHeaders(), responseType: 'blob' })
+      .subscribe({
+        next: blob => {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = file.fileName || fileId;
+          link.click();
+          window.URL.revokeObjectURL(link.href);
+        },
+        error: err => {
+          const id = Object.keys(this.attachmentsById).find(key => this.attachmentsById[key]?.includes(file));
+          if (id) {
+            this.attachmentsError[id] = this.readError(err);
+            this.cdr.markForCheck();
+          }
+        }
+      });
   }
 
   getId(item: Grievance) {

@@ -22,6 +22,13 @@ type Feedback = {
   score?: number;
 };
 
+type FileMeta = {
+  id?: string;
+  fileName?: string;
+  url?: string;
+  fileDownloadUri?: string;
+};
+
 @Component({
   selector: 'app-cw-dashboard',
   standalone: true,
@@ -68,6 +75,19 @@ type Feedback = {
               </div>
               <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">
                 Feedback: {{ feedbackById[getId(g)]?.comments }}
+              </div>
+              <div class="attachments">
+                <button class="link-button" type="button" (click)="loadAttachments(getId(g))">
+                  {{ attachmentsLoading[getId(g)] ? 'Loading attachments...' : 'Load attachments' }}
+                </button>
+                <div class="inline-help error" *ngIf="attachmentsError[getId(g)]">{{ attachmentsError[getId(g)] }}</div>
+                <ul class="attachment-list" *ngIf="attachmentsById[getId(g)]?.length">
+                  <li *ngFor="let file of attachmentsById[getId(g)]">
+                    <button class="attachment-link" type="button" (click)="downloadAttachment(file)">
+                      {{ file.fileName || file.id || 'Attachment' }}
+                    </button>
+                  </li>
+                </ul>
               </div>
             </li>
           </ul>
@@ -156,6 +176,10 @@ type Feedback = {
     .feedback{font-size:.9rem;color:#0f172a;background:#f1f5f9;border-radius:10px;padding:.5rem .6rem;border:1px solid #e2e8f0}
     .loading{display:flex;align-items:center;gap:.45rem;color:var(--muted)}
     .spinner{width:18px;height:18px;border:3px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:spin 1s linear infinite}
+    .attachments{display:flex;flex-direction:column;gap:.35rem}
+    .attachment-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.25rem}
+    .attachment-link{background:none;border:none;color:var(--accent);cursor:pointer;text-align:left;padding:0}
+    .inline-help.error{color:#b91c1c;font-size:.85rem}
     .inline-help.warn{color:#b45309}
     @keyframes spin{to{transform:rotate(360deg)}}
     @media (max-width:768px){
@@ -182,6 +206,9 @@ export class CwDashboardComponent implements OnInit {
   assignedLoading = false;
   assignedError = '';
   feedbackById: Record<string, Feedback> = {};
+  attachmentsById: Record<string, FileMeta[]> = {};
+  attachmentsLoading: Record<string, boolean> = {};
+  attachmentsError: Record<string, string> = {};
 
   statusForm = { grievanceId: '', status: 'IN_PROGRESS', updatedBy: '', remarks: '' };
   statusSubmitting = false;
@@ -267,6 +294,52 @@ export class CwDashboardComponent implements OnInit {
   isSelectedEscalated() {
     const status = this.selectedGrievance?.status || '';
     return status.toLowerCase() === 'escalated';
+  }
+
+  loadAttachments(grievanceId: string) {
+    if (!grievanceId) return;
+    this.attachmentsError[grievanceId] = '';
+    this.attachmentsLoading[grievanceId] = true;
+    this.http
+      .get<FileMeta[]>(`/storage-api/storage/grievance/${grievanceId}`, {
+        headers: this.authHeaders()
+      })
+      .subscribe({
+        next: res => {
+          this.attachmentsById[grievanceId] = Array.isArray(res) ? res : [];
+          this.attachmentsLoading[grievanceId] = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.attachmentsError[grievanceId] = this.readError(err);
+          this.attachmentsLoading[grievanceId] = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  downloadAttachment(file: FileMeta) {
+    const fileId = file.id;
+    if (!fileId) return;
+    const url = `/storage-api/storage/${fileId}`;
+    this.http
+      .get(url, { headers: this.authHeaders(), responseType: 'blob' })
+      .subscribe({
+        next: blob => {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = file.fileName || fileId;
+          link.click();
+          window.URL.revokeObjectURL(link.href);
+        },
+        error: err => {
+          const id = Object.keys(this.attachmentsById).find(key => this.attachmentsById[key]?.includes(file));
+          if (id) {
+            this.attachmentsError[id] = this.readError(err);
+            this.cdr.markForCheck();
+          }
+        }
+      });
   }
 
   getId(g: Grievance) {

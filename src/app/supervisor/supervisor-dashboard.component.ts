@@ -6,6 +6,7 @@ import { AuthService } from '../auth/auth.service';
 
 type Department = { id: string; name: string; state?: string; level?: string };
 type Feedback = { grievanceId?: string; comments?: string; score?: number };
+type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?: string };
 
 @Component({
   selector: 'app-supervisor-dashboard',
@@ -63,6 +64,19 @@ type Feedback = { grievanceId?: string; comments?: string; score?: number };
                 <span *ngIf="g.subCategoryCode">Sub-category: {{ g.subCategoryCode }}</span>
               </div>
               <div class="feedback" *ngIf="feedbackById[g.id]?.comments">Feedback: {{ feedbackById[g.id]?.comments }}</div>
+              <div class="attachments">
+                <button class="link-button" type="button" (click)="loadAttachments(g.id)">
+                  {{ attachmentsLoading[g.id] ? 'Loading attachments...' : 'Load attachments' }}
+                </button>
+                <div class="inline-help error" *ngIf="attachmentsError[g.id]">{{ attachmentsError[g.id] }}</div>
+                <ul class="attachment-list" *ngIf="attachmentsById[g.id]?.length">
+                  <li *ngFor="let file of attachmentsById[g.id]">
+                    <button class="attachment-link" type="button" (click)="downloadAttachment(file)">
+                      {{ file.fileName || file.id || 'Attachment' }}
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </li>
           </ul>
           <div class="pagination" *ngIf="allPageCount > 1">
@@ -121,6 +135,19 @@ type Feedback = { grievanceId?: string; comments?: string; score?: number };
                 <span *ngIf="g.subCategoryCode">Sub-category: {{ g.subCategoryCode }}</span>
               </div>
               <div class="feedback" *ngIf="feedbackById[g.id]?.comments">Feedback: {{ feedbackById[g.id]?.comments }}</div>
+              <div class="attachments">
+                <button class="link-button" type="button" (click)="loadAttachments(g.id)">
+                  {{ attachmentsLoading[g.id] ? 'Loading attachments...' : 'Load attachments' }}
+                </button>
+                <div class="inline-help error" *ngIf="attachmentsError[g.id]">{{ attachmentsError[g.id] }}</div>
+                <ul class="attachment-list" *ngIf="attachmentsById[g.id]?.length">
+                  <li *ngFor="let file of attachmentsById[g.id]">
+                    <button class="attachment-link" type="button" (click)="downloadAttachment(file)">
+                      {{ file.fileName || file.id || 'Attachment' }}
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </li>
           </ul>
           <div class="pagination" *ngIf="deptPageCount > 1">
@@ -254,6 +281,9 @@ export class SupervisorDashboardComponent implements OnInit, OnDestroy {
   deptLoading = false;
   deptError = '';
   feedbackById: Record<string, Feedback> = {};
+  attachmentsById: Record<string, FileMeta[]> = {};
+  attachmentsLoading: Record<string, boolean> = {};
+  attachmentsError: Record<string, string> = {};
 
   escalatedList: any[] = [];
   escalatedLoading = false;
@@ -314,6 +344,7 @@ export class SupervisorDashboardComponent implements OnInit, OnDestroy {
         next: res => {
           this.grievancesList = this.normalizeArray(res);
           this.loadFeedbackForResolved(this.grievancesList);
+          this.loadAttachmentsForResolved(this.grievancesList);
           this.allPage = 1;
           this.grievancesLoading = false;
           this.cdr.markForCheck();
@@ -341,6 +372,7 @@ export class SupervisorDashboardComponent implements OnInit, OnDestroy {
         next: res => {
           this.deptList = this.normalizeArray(res);
           this.loadFeedbackForResolved(this.deptList);
+          this.loadAttachmentsForResolved(this.deptList);
           this.deptPage = 1;
           this.deptLoading = false;
           this.cdr.markForCheck();
@@ -544,6 +576,57 @@ export class SupervisorDashboardComponent implements OnInit, OnDestroy {
           error: () => {}
         });
     });
+  }
+
+  private loadAttachmentsForResolved(list: any[]) {
+    list.forEach(item => {
+      const id = item?.id;
+      if (!id || !this.isResolved(item.status) || this.attachmentsById[id] || this.attachmentsLoading[id]) return;
+      this.attachmentsLoading[id] = true;
+      this.http
+        .get<FileMeta[]>(`/storage-api/storage/grievance/${id}`, { headers: this.soHeaders() })
+        .subscribe({
+          next: res => {
+            this.attachmentsById[id] = Array.isArray(res) ? res : [];
+            this.attachmentsLoading[id] = false;
+            this.cdr.markForCheck();
+          },
+          error: err => {
+            this.attachmentsError[id] = this.readError(err);
+            this.attachmentsLoading[id] = false;
+            this.cdr.markForCheck();
+          }
+        });
+    });
+  }
+
+  loadAttachments(grievanceId: string) {
+    if (!grievanceId) return;
+    this.loadAttachmentsForResolved([{ id: grievanceId, status: 'resolved' }]);
+  }
+
+  downloadAttachment(file: FileMeta) {
+    const fileId = file.id;
+    if (!fileId) return;
+    const url = `/storage-api/storage/${fileId}`;
+    this.http
+      .get(url, { headers: this.soHeaders(), responseType: 'blob' })
+      .subscribe({
+        next: blob => {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = file.fileName || fileId;
+          link.click();
+          window.URL.revokeObjectURL(link.href);
+        },
+        error: err => {
+          const id = Object.keys(this.attachmentsById).find(key => this.attachmentsById[key]?.includes(file));
+          if (id) {
+            this.attachmentsError[id] = this.readError(err);
+            this.cdr.markForCheck();
+          }
+        }
+      });
   }
 
   private readError(error: unknown) {
