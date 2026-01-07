@@ -1,0 +1,59 @@
+ <section class="auth-shell">
+      <div class="panel-container">
+        <div class="panel">
+          <header>
+            <button type="button" class="back-button" (click)="goBackToSignup()" title="Back to signup">&larr;</button>
+            <p class="eyebrow">Admin Access</p>
+            <h1>Administrator Login</h1>
+            <p class="subtitle">Authenticate to manage departments and staff users.</p>
+          </header>
+
+          <form #loginFormRef="ngForm" (ngSubmit)="loginAdmin()" class="form">
+          <label class="field-label">Email</label>
+          <input
+            placeholder="yourmail@example.com"
+            class="field"
+            type="email"
+            [(ngModel)]="loginForm.email"
+            name="loginEmail"
+            #loginEmailModel="ngModel"
+            required
+            (ngModelChange)="onLoginChange()"
+          />
+          <div class="field-error" *ngIf="loginEmailModel?.invalid && loginEmailModel.dirty">
+            <small *ngIf="loginEmailModel.errors?.['required']">Email is required.</small>
+            <small *ngIf="loginEmailModel.errors?.['email']">Enter a valid email.</small>
+          </div>
+
+          <label class="field-label">Password</label>
+          <input
+            placeholder="Enter your password"
+            class="field"
+            type="password"
+            [(ngModel)]="loginForm.password"
+            name="loginPassword"
+            #loginPasswordModel="ngModel"
+            required minlength="8"
+            (ngModelChange)="onLoginChange()"
+          />
+          <div class="field-error" *ngIf="loginPasswordModel?.invalid && loginPasswordModel.dirty">
+            <small *ngIf="loginPasswordModel.errors?.['required']">Password is required.</small>
+            <small *ngIf="loginPasswordModel.errors?.['minlength']">Enter at least 8 characters.</small>
+          </div>
+
+          <div class="response warn" *ngIf="loginValidation">{{ loginValidation }}</div>
+          <div class="form-actions">
+            <button class="button" type="submit" [disabled]="!!loginValidation || submitting">
+              {{ submitting ? 'Signing in...' : 'Login' }}
+            </button>
+            <button class="button secondary" type="button" (click)="resetLoginForm(loginFormRef)">Reset</button>
+          </div>
+          <div class="response error" *ngIf="loginError">{{ loginError }}</div>
+        </form>
+      </div>
+      <div class="info-box">
+        <h3>Staff Portal</h3>
+        <p>Access the administrative dashboard to manage departments, staff members, and grievance workflows.</p>
+      </div>
+      </div>
+    </section>

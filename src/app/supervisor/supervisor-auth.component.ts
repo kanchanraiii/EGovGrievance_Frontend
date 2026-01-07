@@ -11,14 +11,15 @@ import { AuthService } from '../auth/auth.service';
   imports: [CommonModule, FormsModule],
   template: `
     <section class="auth-shell">
-      <div class="panel">
-        <header>
-          <p class="eyebrow">Supervisory Officer</p>
-          <h1>Login</h1>
-          <p class="subtitle">Use your supervisory officer credentials.</p>
-        </header>
+      <div class="panel-container">
+        <div class="panel">
+          <header>
+            <p class="eyebrow">Supervisory Officer</p>
+            <h1>Login</h1>
+            <p class="subtitle">Use your supervisory officer credentials.</p>
+          </header>
 
-        <form #loginFormRef="ngForm" (ngSubmit)="login()" class="form">
+          <form #loginFormRef="ngForm" (ngSubmit)="login()" class="form">
           <label class="field-label">Email</label>
           <input
             placeholder="yourmail@example.com"
@@ -62,15 +63,25 @@ import { AuthService } from '../auth/auth.service';
           <div class="response error" *ngIf="error">{{ error }}</div>
         </form> 
       </div>
+      <div class="info-box">
+        <h3>Supervisory Portal</h3>
+        <p>Monitor and supervise grievance workflows, manage case workers, and oversee resolution processes.</p>
+      </div>
+      </div>
     </section>
   `,
   styles: [
     `:host{display:block}
     .auth-shell{min-height:calc(100vh - 3rem);display:flex;align-items:center;justify-content:center;padding:2rem}
-    .panel{width:min(480px,100%);background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:2rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1rem}
+    .panel-container{display:flex;gap:2rem;align-items:stretch;width:min(900px,100%)}
+    .panel{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:2rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1rem;min-width:300px}
+    .info-box{flex:0 0 280px;background:linear-gradient(160deg,#74438f 0%,#9a53ad 45%,#d6795f 100%);border:2px solid rgba(255,255,255,0.35);border-radius:18px;padding:1.5rem;display:flex;flex-direction:column;gap:0.8rem;justify-content:center;color:#f8fafc}
+    .info-box h3{margin:0;font-size:1.2rem;color:#f8fafc}
+    .info-box p{margin:0;color:#f1f5f9;font-size:0.95rem;line-height:1.5}
     .eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.7rem;color:var(--accent-2);margin:0}
     h1{margin:.35rem 0;font-size:1.8rem}
     .subtitle{margin:0;color:var(--muted)}
+    header{position:relative}
     .form{display:flex;flex-direction:column;gap:.6rem}
     .field-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
     .field{border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;font:inherit;background:#fff}
@@ -82,6 +93,7 @@ import { AuthService } from '../auth/auth.service';
     .response{margin-top:.4rem;border-radius:10px;padding:.6rem .75rem;font-size:.8rem}
     .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
     .response.warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
+    @media (max-width:768px){.panel-container{flex-direction:column}.info-box{flex:1;min-width:auto}}
     `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -104,6 +116,10 @@ export class SupervisorAuthComponent {
 
   onChange() {
     this.error = '';
+  }
+
+  goBackToSignup() {
+    this.router.navigateByUrl('/');
   }
 
   resetLoginForm(form?: NgForm) {

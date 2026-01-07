@@ -52,14 +52,30 @@
         </div>
       </div>
       <div class="dropdown" *ngIf="menuOpen()">
-        <button class="logout" type="button" (click)="logout()">Logout</button>
+        <button class="logout" type="button" (click)="openLogoutConfirm()">Logout</button>
       </div>
     </div>
   </ng-container>
   <ng-template #signupLink>
-    <a class="nav-item signup signup-bottom" routerLink="/auth" routerLinkActive="active" (click)="closeNav()">
+    <a
+      class="nav-item signup signup-bottom"
+      routerLink="/auth"
+      routerLinkActive="active"
+      (click)="closeNav()"
+    >
       <span class="nav-short">S</span>
       <span class="nav-text">Sign Up</span>
     </a>
   </ng-template>
+  <div class="overlay" *ngIf="showLogoutConfirm()" (click)="closeLogoutConfirm()"></div>
+
+  <div class="logout-modal" *ngIf="showLogoutConfirm()">
+    <h3>Confirm Logout</h3>
+    <p>Do you really want to logout?</p>
+
+    <div class="modal-actions">
+      <button class="btn cancel" type="button" (click)="closeLogoutConfirm()">Cancel</button>
+      <button class="btn confirm" type="button" (click)="confirmLogout()">Logout</button>
+    </div>
+  </div>
 </aside>

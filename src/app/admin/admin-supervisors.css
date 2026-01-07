@@ -110,6 +110,11 @@ h1 {
   color: #9f1239;
   border: 1px solid #fecdd3;
 }
+.inline-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
 @media (max-width: 768px) {
   .admin-shell {
     padding: 1rem;

@@ -18,6 +18,7 @@ export class AuthComponent {
   private auth = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
+
   mode: 'login' | 'signup' = 'login';
   staffRole = 'admin';
   loginForm = {
@@ -36,6 +37,7 @@ export class AuthComponent {
   registerError = '';
   registerResult = false;
   loginSubmitting = false;
+  showToast=false;
 
   get loginValidation(): string {
     if (!this.loginForm.email.trim()) return 'Email is required.';

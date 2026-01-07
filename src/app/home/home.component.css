@@ -427,6 +427,13 @@ h1 {
   accent-color: var(--accent);
 }
 
+.comment-block {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 @media (max-width: 960px) {
   .page-frame {
     padding: 1.4rem;

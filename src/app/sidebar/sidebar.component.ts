@@ -177,6 +177,22 @@ export class SidebarComponent {
     window.location.href = '/auth';
   }
 
+  showLogoutConfirm = signal(false);
+
+openLogoutConfirm() {
+  this.showLogoutConfirm.set(true);
+}
+
+closeLogoutConfirm() {
+  this.showLogoutConfirm.set(false);
+}
+
+confirmLogout() {
+  this.showLogoutConfirm.set(false);
+  this.logout();
+}
+
+
   get avatarUrl() {
     return this.defaultAvatar;
   }

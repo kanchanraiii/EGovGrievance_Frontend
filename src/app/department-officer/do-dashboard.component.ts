@@ -16,6 +16,8 @@ type Grievance = {
   remarks?: string;
 };
 
+type Feedback = { grievanceId?: string; comments?: string; score?: number };
+
 @Component({
   selector: 'app-do-dashboard',
   standalone: true,
@@ -101,6 +103,9 @@ type Grievance = {
           <button class="button ghost" type="button" (click)="loadCaseWorkers()" [disabled]="caseWorkersLoading">Refresh</button>
         </div>
         <div class="response error" *ngIf="caseWorkersError">{{ caseWorkersError }}</div>
+        <div class="inline-help" *ngIf="caseWorkersLoading">
+          <span class="spinner" aria-hidden="true"></span> Loading case workers...
+        </div>
         <div class="card-grid" *ngIf="caseWorkers.length">
           <article class="grievance-card" *ngFor="let cw of caseWorkers; trackBy: trackCaseWorker">
             <header class="grievance-head">
@@ -122,13 +127,50 @@ type Grievance = {
 
       <section class="card">
         <div class="card-head">
+          <h2>Department grievances</h2>
+          <p class="helper">See all grievances for your department (scoped by your login).</p>
+        </div>
+        <div class="actions">
+          <button class="button ghost" type="button" (click)="loadDepartmentGrievances()" [disabled]="deptGrievancesLoading">
+            {{ deptGrievancesLoading ? 'Loading...' : 'Refresh' }}
+          </button>
+        </div>
+        <div class="response error" *ngIf="deptGrievancesError">{{ deptGrievancesError }}</div>
+        <div class="card-grid" *ngIf="deptGrievances.length">
+          <article class="grievance-card" *ngFor="let g of deptGrievances; trackBy: trackGrievance" [class.escalated]="g.status === 'ESCALATED'">
+            <header class="grievance-head">
+              <div>
+                <div class="id">#{{ g.id || g.grievanceId }}</div>
+                <div class="muted">Dept: {{ g.departmentId || '—' }}</div>
+              </div>
+              <span class="status submitted">{{ g.status || 'N/A' }}</span>
+            </header>
+            <p class="description">{{ g.description || 'No description provided.' }}</p>
+            <div class="meta">
+              <span *ngIf="g.assignedTo">Assigned to: {{ g.assignedTo }}</span>
+              <span *ngIf="g.updatedBy">Updated by: {{ g.updatedBy }}</span>
+              <span *ngIf="g.remarks">Remarks: {{ g.remarks }}</span>
+            </div>
+            <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">Feedback: {{ feedbackById[getId(g)]?.comments }}</div>
+          </article>
+        </div>
+        <div class="response warn" *ngIf="!deptGrievancesLoading && !deptGrievances.length && !deptGrievancesError">No grievances found for your department.</div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
           <h2>Grievances by case worker</h2>
           <p class="helper">See grievances handled by a specific case worker.</p>
         </div>
         <div class="form-grid two-column">
           <div>
-            <label class="field-label">Case worker ID</label>
-            <input class="field" [(ngModel)]="caseWorkerId" />
+            <label class="field-label">Case worker</label>
+            <select class="field" [(ngModel)]="caseWorkerId">
+              <option value="" disabled>Select a case worker</option>
+              <option *ngFor="let cw of caseWorkers; trackBy: trackCaseWorker" [value]="cw.id || cw.email">
+                {{ cw.fullName || cw.email || cw.id }}
+              </option>
+            </select>
           </div>
         </div>
         <div class="actions">
@@ -152,6 +194,7 @@ type Grievance = {
               <span *ngIf="g.updatedBy">Updated by: {{ g.updatedBy }}</span>
               <span *ngIf="g.remarks">Remarks: {{ g.remarks }}</span>
             </div>
+            <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">Feedback: {{ feedbackById[getId(g)]?.comments }}</div>
           </article>
         </div>
         <div class="response warn" *ngIf="!cwGrievancesLoading && !cwGrievances.length && !cwGrievancesError">No grievances for this case worker.</div>
@@ -228,6 +271,9 @@ type Grievance = {
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .description{margin:0;font-size:1rem;line-height:1.45}
     .meta{display:flex;flex-wrap:wrap;gap:.55rem;font-size:.9rem;color:var(--muted)}
+    .feedback{font-size:.9rem;color:#0f172a;background:#f1f5f9;border-radius:10px;padding:.5rem .6rem;border:1px solid #e2e8f0}
+    .spinner{width:16px;height:16px;border:3px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
     @media (max-width:768px){
       .admin-shell{padding:1rem}
       .grid{grid-template-columns:1fr}
@@ -267,13 +313,20 @@ export class DoDashboardComponent implements OnInit {
   cwGrievancesLoading = false;
   cwGrievancesError = '';
 
+  deptGrievances: Grievance[] = [];
+  deptGrievancesLoading = false;
+  deptGrievancesError = '';
+  feedbackById: Record<string, Feedback> = {};
+
   cwForm = { fullName: '', email: '', phone: '', password: '', departmentId: '' };
   cwSubmitting = false;
   cwSuccess = '';
   cwError = '';
+  
 
   ngOnInit(): void {
     this.loadCaseWorkers();
+    this.loadDepartmentGrievances();
   }
 
   assignGrievance() {
@@ -335,13 +388,49 @@ export class DoDashboardComponent implements OnInit {
       .get<CaseWorker[]>(`${this.auth.getBaseUrl()}/grievance-service/api/grievances/my-case-workers`, { headers: this.authHeaders() })
       .subscribe({
         next: res => {
-          this.caseWorkers = Array.isArray(res) ? res : [];
+          const raw = Array.isArray(res)
+            ? res
+            : Array.isArray((res as any)?.caseWorkers)
+              ? (res as any).caseWorkers
+              : Array.isArray((res as any)?.data)
+                ? (res as any).data
+                : [];
+          this.caseWorkers = raw.map((entry: CaseWorker | string) => {
+            if (typeof entry === 'string') {
+              return { id: entry, fullName: entry };
+            }
+            return entry as CaseWorker;
+          });
+          if (!this.caseWorkers.some(cw => cw.id === this.caseWorkerId || cw.email === this.caseWorkerId)) {
+            this.caseWorkerId = '';
+          }
           this.caseWorkersLoading = false;
           this.cdr.markForCheck();
         },
         error: err => {
           this.caseWorkersError = this.readError(err);
           this.caseWorkersLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  loadDepartmentGrievances() {
+    this.deptGrievancesError = '';
+    this.deptGrievances = [];
+    this.deptGrievancesLoading = true;
+    this.http
+      .get<Grievance[]>(`/grievance-service/api/grievances/getAll`, { headers: this.authHeaders() })
+      .subscribe({
+        next: res => {
+          this.deptGrievances = Array.isArray(res) ? res : [];
+          this.loadFeedbackForResolved(this.deptGrievances);
+          this.deptGrievancesLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.deptGrievancesError = this.readError(err);
+          this.deptGrievancesLoading = false;
           this.cdr.markForCheck();
         }
       });
@@ -363,6 +452,7 @@ export class DoDashboardComponent implements OnInit {
       .subscribe({
         next: res => {
           this.cwGrievances = Array.isArray(res) ? res : [];
+          this.loadFeedbackForResolved(this.cwGrievances);
           this.cwGrievancesLoading = false;
           this.cdr.markForCheck();
         },
@@ -411,6 +501,31 @@ export class DoDashboardComponent implements OnInit {
 
   trackGrievance(index: number, item: Grievance) {
     return item.id || item.grievanceId || index;
+  }
+
+  getId(item: Grievance) {
+    return item.id || item.grievanceId || '';
+  }
+
+  private isResolved(status?: string) {
+    const normalized = (status || '').toLowerCase();
+    return normalized === 'resolved' || normalized === 'closed';
+  }
+
+  private loadFeedbackForResolved(list: Grievance[]) {
+    list.forEach(item => {
+      const id = this.getId(item);
+      if (!id || !this.isResolved(item.status) || this.feedbackById[id]) return;
+      this.http
+        .get<Feedback>(`/feedback-service/api/feedback/grievance/${id}`, { headers: this.authHeaders() })
+        .subscribe({
+          next: res => {
+            this.feedbackById[id] = res;
+            this.cdr.markForCheck();
+          },
+          error: () => {}
+        });
+    });
   }
 
   private authHeaders() {

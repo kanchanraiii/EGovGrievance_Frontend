@@ -33,7 +33,7 @@
             [disabled]="departmentsLoading || !departments.length"
           >
             <option value="" disabled>Select a department</option>
-            <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+            <option *ngFor="let dept of departments" [value]="dept.id">{{ getDepartmentLabel(dept) }}</option>
           </select>
           <div class="inline-help" *ngIf="departmentsLoading">Loading departments...</div>
           <div class="inline-help warn" *ngIf="!departmentsLoading && !departments.length && !departmentsError">
@@ -172,21 +172,49 @@
             </div>
 
             <div class="rating-block" *ngIf="isResolved(item); else ratingLocked">
-              <h3>Rate this grievance</h3>
-              <p class="helper">Scores from 1 (poor) to 5 (excellent).</p>
-              <div class="rating-inputs">
-                <label *ngFor="let n of ratingOptions">
-                  <input type="radio" name="score-{{ getId(item) }}" [value]="n" [(ngModel)]="ratingScore" />
-                  <span>{{ n }}</span>
-                </label>
-              </div>
-              <div class="actions">
-                <button class="button" type="button" (click)="postRating()" [disabled]="!ratingScore">
-                  Submit rating
-                </button>
-              </div>
-              <div class="response error" *ngIf="ratingError">{{ ratingError }}</div>
-              <div class="response success" *ngIf="ratingResult">Thank you for your feedback.</div>
+              <ng-container *ngIf="!feedbackByGrievance[getId(item)]; else feedbackExists">
+                <h3>Rate this grievance</h3>
+                <p class="helper">Scores from 1 (poor) to 5 (excellent). Comments can also be shared once resolved.</p>
+                <div class="rating-inputs">
+                  <label *ngFor="let n of ratingOptions">
+                    <input type="radio" name="score-{{ getId(item) }}" [value]="n" [(ngModel)]="ratingScore" />
+                    <span>{{ n }}</span>
+                  </label>
+                </div>
+                <div class="actions">
+                  <button class="button" type="button" (click)="postRating()" [disabled]="!ratingScore">
+                    Submit rating
+                  </button>
+                </div>
+                <div class="response error" *ngIf="ratingError">{{ ratingError }}</div>
+                <div class="response success" *ngIf="ratingResult">Thank you for your feedback.</div>
+
+                <div class="comment-block">
+                  <h4>Leave a comment</h4>
+                  <textarea
+                    class="field field-textarea"
+                    rows="3"
+                    placeholder="Share more details about your experience."
+                    [(ngModel)]="commentText"
+                  ></textarea>
+                  <div class="actions">
+                    <button class="button ghost" type="button" (click)="postComment()" [disabled]="!commentText.trim()">
+                      Submit comment
+                    </button>
+                  </div>
+                  <div class="response error" *ngIf="commentError">{{ commentError }}</div>
+                  <div class="response success" *ngIf="commentResult">Comment submitted. Thank you!</div>
+                </div>
+              </ng-container>
+              <ng-template #feedbackExists>
+                <div class="response success">Feedback already submitted for this grievance.</div>
+                <div class="inline-help" *ngIf="feedbackByGrievance[getId(item)]?.score">
+                  Rating: {{ feedbackByGrievance[getId(item)]?.score }}
+                </div>
+                <div class="inline-help" *ngIf="feedbackByGrievance[getId(item)]?.comments">
+                  Comment: {{ feedbackByGrievance[getId(item)]?.comments }}
+                </div>
+              </ng-template>
             </div>
             <ng-template #ratingLocked>
               <div class="rating-locked">

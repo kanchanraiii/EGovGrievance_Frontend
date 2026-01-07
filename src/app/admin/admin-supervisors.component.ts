@@ -32,8 +32,14 @@ export class AdminSupervisorsComponent {
       return;
     }
 
-    if (!this.soForm.fullName.trim() || !this.soForm.email.trim() || !this.soForm.password.trim()) {
+    if (!this.soForm.fullName.trim() || !this.soForm.email.trim() || !this.soForm.password.trim() || !this.soForm.phone.trim()) {
       this.soError = 'All fields are required.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.isPasswordStrong(this.soForm.password)) {
+      this.soError = 'Password must be at least 8 characters and include upper, lower, number, and special character.';
       this.cdr.markForCheck();
       return;
     }
@@ -66,6 +72,11 @@ export class AdminSupervisorsComponent {
       form.resetForm(this.soForm);
     }
     this.cdr.markForCheck();
+  }
+
+  private isPasswordStrong(password: string) {
+    // Require at least 8 characters with upper, lower, digit, and special character.
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$/.test(password || '');
   }
 
   private authHeaders() {

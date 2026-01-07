@@ -28,10 +28,12 @@ import { AuthService } from '../auth/auth.service';
           <div>
             <label class="field-label">Department ID</label>
             <input class="field" [(ngModel)]="newDept.id" />
+            <div class="field-error" *ngIf="showDeptValidation && !newDept.id.trim()">Department ID is required.</div>
           </div>
           <div>
             <label class="field-label">Name</label>
             <input class="field" [(ngModel)]="newDept.name" />
+            <div class="field-error" *ngIf="showDeptValidation && !newDept.name.trim()">Name is required.</div>
           </div>
           <div>
             <label class="field-label">Level</label>
@@ -52,10 +54,12 @@ import { AuthService } from '../auth/auth.service';
               <div>
                 <label class="field-label">Category code</label>
                 <input class="field" [(ngModel)]="cat.code" />
+                <div class="field-error" *ngIf="showDeptValidation && !cat.code.trim()">Category code is required.</div>
               </div>
               <div>
                 <label class="field-label">Category name</label>
                 <input class="field" [(ngModel)]="cat.name" />
+                <div class="field-error" *ngIf="showDeptValidation && !cat.name.trim()">Category name is required.</div>
               </div>
             </div>
             <div class="subcat-list">
@@ -66,8 +70,9 @@ import { AuthService } from '../auth/auth.service';
               <div class="subcat-row" *ngFor="let sub of cat.subCategories; let j = index">
                 <input class="field small" placeholder="Code" [(ngModel)]="sub.code" />
                 <input class="field small" placeholder="Name" [(ngModel)]="sub.name" />
-                <button class="chip danger" type="button" (click)="removeSubcategory(i, j)">Remove</button>
+                <button class="chip danger" type="button" (click)="removeSubcategory(i, j)" *ngIf="cat.subCategories.length > 1">Remove</button>
               </div>
+              <div class="field-error" *ngIf="showDeptValidation && !isSubcatValid(cat)">At least one sub-category with code and name is required.</div>
             </div>
             <div class="cat-actions">
               <button class="chip danger" type="button" (click)="removeCategoryRow(i)">Remove category</button>
@@ -75,9 +80,10 @@ import { AuthService } from '../auth/auth.service';
           </div>
         </div>
         <div class="actions">
-          <button class="button" type="button" (click)="addDepartment()" [disabled]="addDeptSubmitting">
+          <button class="button" type="button" (click)="addDepartment()" [disabled]="addDeptSubmitting || !isDeptFormValid()">
             {{ addDeptSubmitting ? 'Adding...' : 'Add Department' }}
           </button>
+          <button class="button secondary" type="button" (click)="resetForm()" [disabled]="addDeptSubmitting">Reset</button>
         </div>
         <div class="response success" *ngIf="addDeptSuccess">
           <div>Department added. Now add Department Officers.</div>
@@ -103,6 +109,7 @@ import { AuthService } from '../auth/auth.service';
     .field-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
     .field{border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;font:inherit;background:#fff}
     .field.small{padding:.45rem .6rem;max-width:200px}
+    .field-error{color:#b42318;font-size:.85rem}
     .actions{display:flex;gap:.5rem;flex-wrap:wrap}
     .button{border:none;border-radius:999px;background:var(--accent);color:#fff;padding:.55rem 1.1rem;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(31,79,147,0.2)}
     .button[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none}
@@ -117,7 +124,7 @@ import { AuthService } from '../auth/auth.service';
     .subcat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.4rem;align-items:center}
     .cat-actions{display:flex;justify-content:flex-end}
     .chip{border:none;border-radius:10px;padding:.4rem .75rem;background:#eef2fb;color:#1f4f93;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.25rem}
-    .chip.danger{background:#fff1f2;color:#b42318}
+    .chip.danger{background:#fff1f2;color:#b42318;min-width:96px;justify-content:center}
     @media (max-width:768px){
       .admin-shell{padding:1rem}
       .card{padding:.9rem}
@@ -144,6 +151,7 @@ export class AdminDepartmentsComponent {
   addDeptSubmitting = false;
   addDeptSuccess = false;
   addDeptError = '';
+  showDeptValidation = false;
 
   addCategoryRow(catIndex: number) {
     this.newDept.categories[catIndex].subCategories.push({ code: '', name: '' });
@@ -165,20 +173,20 @@ export class AdminDepartmentsComponent {
     this.cdr.markForCheck();
   }
 
-  addCategoryBlock() {
-    this.newDept.categories.push({ code: '', name: '', subCategories: [{ code: '', name: '' }] });
-    this.cdr.markForCheck();
+  isDeptFormValid() {
+    if (!this.newDept.id.trim() || !this.newDept.name.trim()) {
+      return false;
+    }
+    const cleaned = this.cleanCategories();
+    return cleaned.length > 0 && cleaned.every(cat => cat.subCategories.length > 0);
   }
 
-  addDepartment() {
-    this.addDeptError = '';
-    this.addDeptSuccess = false;
-    if (!this.newDept.id.trim() || !this.newDept.name.trim()) {
-      this.addDeptError = 'Department ID and name are required.';
-      this.cdr.markForCheck();
-      return;
-    }
-    const cleanedCategories = this.newDept.categories
+  isSubcatValid(cat: { subCategories: { code: string; name: string }[] }) {
+    return (cat.subCategories || []).some(sub => sub.code.trim() && sub.name.trim());
+  }
+
+  private cleanCategories() {
+    return this.newDept.categories
       .map(cat => ({
         code: cat.code.trim(),
         name: cat.name.trim(),
@@ -192,12 +200,31 @@ export class AdminDepartmentsComponent {
         ...cat,
         subCategories: cat.subCategories.filter(sub => sub.code && sub.name)
       }));
+  }
 
-    if (!cleanedCategories.length) {
-      this.addDeptError = 'At least one category with code and name is required.';
+  addCategoryBlock() {
+    this.newDept.categories.push({ code: '', name: '', subCategories: [{ code: '', name: '' }] });
+    this.cdr.markForCheck();
+  }
+
+  resetForm() {
+    this.newDept = this.blankDept();
+    this.addDeptError = '';
+    this.addDeptSuccess = false;
+    this.showDeptValidation = false;
+    this.cdr.markForCheck();
+  }
+
+  addDepartment() {
+    this.addDeptError = '';
+    this.addDeptSuccess = false;
+    this.showDeptValidation = true;
+    if (!this.isDeptFormValid()) {
+      this.addDeptError = 'Please fill required department, category, and sub-category details.';
       this.cdr.markForCheck();
       return;
     }
+    const cleanedCategories = this.cleanCategories();
 
     const payload = {
       id: this.newDept.id.trim(),
@@ -212,6 +239,7 @@ export class AdminDepartmentsComponent {
         this.addDeptSuccess = true;
         this.addDeptSubmitting = false;
         this.newDept = this.blankDept();
+        this.showDeptValidation = false;
         this.cdr.markForCheck();
       },
       error: err => {

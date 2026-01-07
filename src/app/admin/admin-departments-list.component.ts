@@ -23,12 +23,15 @@ type Department = {
           <h1>View Departments</h1>
           <p class="subtitle">Browse, open, or delete departments (state and central).</p>
         </div>
-        <button class="button ghost" type="button" (click)="loadDepartments()" [disabled]="deptLoading">
+        <button class="button ghost" type="button"
+                (click)="loadDepartments()" [disabled]="deptLoading">
           {{ deptLoading ? 'Loading...' : 'Refresh' }}
         </button>
       </header>
 
       <div class="grid">
+
+        <!-- CENTRAL -->
         <section class="card">
           <div class="card-head">
             <h2>Central Departments</h2>
@@ -37,22 +40,29 @@ type Department = {
           <div class="scroll-area">
             <div class="response error" *ngIf="deptError">{{ deptError }}</div>
             <div class="loading" *ngIf="deptLoading">Loading...</div>
-            <div class="empty" *ngIf="!deptLoading && !deptError && !centralDepartments.length">No central departments.</div>
+            <div class="empty" *ngIf="!deptLoading && !deptError && !centralDepartments.length">
+              No central departments.
+            </div>
             <div class="dept-list" *ngIf="!deptLoading && !deptError && centralDepartments.length">
               <div class="dept-row" *ngFor="let dept of centralDepartments">
                 <div>
-                  <div class="dept-title">{{ dept.name }} <span class="muted">({{ dept.id }})</span></div>
+                  <div class="dept-title">
+                    {{ dept.name }} <span class="muted">({{ dept.id }})</span>
+                  </div>
                   <div class="muted">Level: {{ dept.level || 'CENTRAL' }}</div>
                 </div>
                 <div class="dept-row-actions">
                   <a class="chip" [routerLink]="['/admin/departments', dept.id]">Open</a>
-                  <button class="chip danger" type="button" (click)="deleteDepartment(dept.id)">Delete</button>
+                  <button class="chip danger" type="button" (click)="openDeleteConfirm(dept.id)">
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
+        <!-- STATE -->
         <section class="card">
           <div class="card-head">
             <h2>State Departments</h2>
@@ -61,21 +71,49 @@ type Department = {
           <div class="scroll-area">
             <div class="response error" *ngIf="deptError">{{ deptError }}</div>
             <div class="loading" *ngIf="deptLoading">Loading...</div>
-            <div class="empty" *ngIf="!deptLoading && !deptError && !stateDepartments.length">No state departments.</div>
+            <div class="empty" *ngIf="!deptLoading && !deptError && !stateDepartments.length">
+              No state departments.
+            </div>
             <div class="dept-list" *ngIf="!deptLoading && !deptError && stateDepartments.length">
               <div class="dept-row" *ngFor="let dept of stateDepartments">
                 <div>
-                  <div class="dept-title">{{ dept.name }} <span class="muted">({{ dept.id }})</span></div>
-                  <div class="muted">Level: {{ dept.level || 'STATE' }} <span *ngIf="dept.state">- {{ dept.state }}</span></div>
+                  <div class="dept-title">
+                    {{ dept.name }} <span class="muted">({{ dept.id }})</span>
+                  </div>
+                  <div class="muted">
+                    Level: {{ dept.level || 'STATE' }}
+                    <span *ngIf="dept.state">- {{ dept.state }}</span>
+                  </div>
                 </div>
                 <div class="dept-row-actions">
                   <a class="chip" [routerLink]="['/admin/departments', dept.id]">Open</a>
-                  <button class="chip danger" type="button" (click)="deleteDepartment(dept.id)">Delete</button>
+                  <button class="chip danger" type="button" (click)="openDeleteConfirm(dept.id)">
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </section>
+
+      </div>
+
+      <!-- DELETE CONFIRM OVERLAY -->
+      <div class="overlay" *ngIf="showDeleteConfirm" (click)="closeDeleteConfirm()"></div>
+
+      <!-- DELETE CONFIRM MODAL -->
+      <div class="modal" *ngIf="showDeleteConfirm">
+        <h3>Confirm Delete</h3>
+        <p>Do you really want to delete this department?</p>
+
+        <div class="modal-actions">
+          <button class="btn cancel" type="button" (click)="closeDeleteConfirm()">
+            Cancel
+          </button>
+          <button class="btn confirm" type="button" (click)="confirmDelete()">
+            Delete
+          </button>
+        </div>
       </div>
     </section>
   `,
@@ -102,6 +140,49 @@ type Department = {
     .loading,.empty{padding:.6rem .75rem;border:1px dashed var(--border);border-radius:10px;color:var(--muted);background:#f8f9ff}
     .button{border:1px solid rgba(31,79,147,0.2);border-radius:999px;background:#eef2fb;color:var(--accent);padding:.55rem 1.1rem;font-weight:700;cursor:pointer}
     .button[disabled]{opacity:.6;cursor:not-allowed}
+
+    /* Blur Overlay */
+    .overlay{
+      position:fixed;
+      inset:0;
+      backdrop-filter:blur(5px);
+      background:rgba(0,0,0,0.45);
+      z-index:9998;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      background:#fff;
+      padding:1.25rem 1.5rem;
+      width:min(340px,90%);
+      border-radius:12px;
+      box-shadow:0 14px 30px rgba(0,0,0,0.25);
+      text-align:center;
+      z-index:9999;
+    }
+
+    .modal-actions{
+      margin-top:1rem;
+      display:flex;
+      justify-content:center;
+      gap:.6rem;
+    }
+
+    .btn{
+      border:none;
+      border-radius:8px;
+      padding:.5rem 1rem;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    .btn.cancel{background:#ccc}
+    .btn.confirm{background:#d11a2a;color:#fff}
+
     @media (max-width:768px){
       .admin-shell{padding:1rem}
       .grid{grid-template-columns:1fr}
@@ -113,8 +194,7 @@ type Department = {
       .button{width:100%;justify-content:center}
       .dept-row-actions{width:100%}
       .chip{width:fit-content}
-    }
-    `
+    }`
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -128,6 +208,10 @@ export class AdminDepartmentsListComponent implements OnInit {
   stateDepartments: Department[] = [];
   deptLoading = false;
   deptError = '';
+
+  // NEW MODAL STATE
+  showDeleteConfirm = false;
+  deleteTargetId: string | null = null;
 
   ngOnInit() {
     this.loadDepartments();
@@ -153,8 +237,34 @@ export class AdminDepartmentsListComponent implements OnInit {
     });
   }
 
-  deleteDepartment(deptId: string) {
-    if (!deptId.trim()) return;
+  // Open modal
+  openDeleteConfirm(id: string) {
+    this.deleteTargetId = id;
+    this.showDeleteConfirm = true;
+    this.cdr.markForCheck();
+  }
+
+  // Close modal
+  closeDeleteConfirm() {
+    this.showDeleteConfirm = false;
+    this.deleteTargetId = null;
+    this.cdr.markForCheck();
+  }
+
+  // Confirm delete
+  confirmDelete() {
+    if (!this.deleteTargetId) return;
+    const deptId = this.deleteTargetId;
+
+    this.showDeleteConfirm = false;
+    this.deleteTargetId = null;
+
+    this.deleteDepartmentNow(deptId);
+    this.cdr.markForCheck();
+  }
+
+  // API delete
+  private deleteDepartmentNow(deptId: string) {
     this.http.delete(`${this.adminApi}/auth/admin/departments/${deptId}`, { headers: this.authHeaders() }).subscribe({
       next: () => {
         this.centralDepartments = this.centralDepartments.filter(d => d.id !== deptId);
@@ -170,14 +280,14 @@ export class AdminDepartmentsListComponent implements OnInit {
 
   private authHeaders() {
     const trimmed = this.auth.getToken().trim();
-    return trimmed ? new HttpHeaders({ Authorization: `Bearer ${trimmed}`, 'Content-Type': 'application/json' }) : new HttpHeaders({ 'Content-Type': 'application/json' });
+    return trimmed
+      ? new HttpHeaders({ Authorization: `Bearer ${trimmed}`, 'Content-Type': 'application/json' })
+      : new HttpHeaders({ 'Content-Type': 'application/json' });
   }
 
   private readError(error: unknown) {
     if (error instanceof HttpErrorResponse) {
-      if (typeof error.error === 'string') {
-        return error.error;
-      }
+      if (typeof error.error === 'string') return error.error;
       return error.error?.message || error.message;
     }
     return String(error);

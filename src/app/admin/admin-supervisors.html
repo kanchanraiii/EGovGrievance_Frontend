@@ -39,9 +39,19 @@
             <label class="field-label">Password</label>
             <div class="field-error" *ngIf="soPasswordModel?.invalid && (soPasswordModel.dirty || soPasswordModel.touched)">
               <small *ngIf="soPasswordModel.errors?.['required']">Password is required.</small>
-              <small *ngIf="soPasswordModel.errors?.['minlength']">Password must be at least 8 characters.</small>
+              <small *ngIf="soPasswordModel.errors?.['pattern']">Min 8 chars, include upper, lower, number, and special.</small>
             </div>
-            <input class="field" name="password" type="password" [(ngModel)]="soForm.password" #soPasswordModel="ngModel" required minlength="8" placeholder="Enter a strong password" />
+            <input
+              class="field"
+              name="password"
+              type="password"
+              [(ngModel)]="soForm.password"
+              #soPasswordModel="ngModel"
+              required
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$"
+              placeholder="Enter a strong password"
+            />
+            <p class="inline-help">Min 8 chars, include uppercase, lowercase, number, and special character.</p>
           </div>
 
           <div class="actions">

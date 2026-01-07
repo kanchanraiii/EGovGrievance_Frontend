@@ -22,6 +22,7 @@ type Department = {
   id: string;
   name: string;
   level?: string;
+  state?: string;
   categories?: Category[];
 };
 
@@ -45,6 +46,17 @@ type Grievance = {
   createdAt?: string;
   updatedAt?: string;
   [key: string]: any;
+};
+
+type DepartmentsResponse = {
+  centralGovernmentDepartments?: Department[];
+  stateGovernmentDepartments?: Department[];
+};
+
+type Feedback = {
+  grievanceId?: string;
+  score?: number;
+  comments?: string;
 };
 
 @Component({
@@ -94,6 +106,10 @@ export class HomeComponent implements OnInit {
   myGrievancesError = '';
   ratingResult = false;
   ratingError = '';
+  commentText = '';
+  commentResult = false;
+  commentError = '';
+  feedbackByGrievance: Record<string, Feedback> = {};
 
   showLodgeForm = signal(false);
 
@@ -115,6 +131,13 @@ export class HomeComponent implements OnInit {
     return item.grievanceId || item.id || '';
   }
 
+  getDepartmentLabel(dept: Department) {
+    const normalizedLevel = (dept.level || '').toLowerCase();
+    const levelLabel = normalizedLevel ? normalizedLevel[0].toUpperCase() + normalizedLevel.slice(1) : '';
+    const region = dept.state ? `${dept.state} State` : levelLabel;
+    return region ? `${dept.name} (${region})` : dept.name;
+  }
+
   selectGrievance(item: Grievance) {
     const id = this.getId(item);
     if (!id) return;
@@ -122,7 +145,11 @@ export class HomeComponent implements OnInit {
     this.ratingScore = null;
     this.ratingError = '';
     this.ratingResult = false;
+    this.commentText = '';
+    this.commentError = '';
+    this.commentResult = false;
     this.loadAttachments(id);
+    this.loadFeedback(id);
   }
 
   toggleGrievance(item: Grievance) {
@@ -133,6 +160,9 @@ export class HomeComponent implements OnInit {
       this.ratingScore = null;
       this.ratingError = '';
       this.ratingResult = false;
+      this.commentText = '';
+      this.commentError = '';
+      this.commentResult = false;
       return;
     }
     this.selectGrievance(item);
@@ -145,18 +175,24 @@ export class HomeComponent implements OnInit {
   fetchDepartments() {
     this.departmentsLoading = true;
     this.departmentsError = '';
-    this.http.get<Department[]>('/departments-api/stateGovernmentDepartments').subscribe({
-      next: res => {
-        this.departments = Array.isArray(res) ? res : [];
-        this.departmentsLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: err => {
-        this.departmentsError = this.readError(err);
-        this.departmentsLoading = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.http
+      .get<DepartmentsResponse>(`${this.auth.getBaseUrl()}/auth/departments`, {
+        headers: this.authHeaders()
+      })
+      .subscribe({
+        next: res => {
+          const central = Array.isArray(res?.centralGovernmentDepartments) ? res.centralGovernmentDepartments : [];
+          const state = Array.isArray(res?.stateGovernmentDepartments) ? res.stateGovernmentDepartments : [];
+          this.departments = [...central, ...state];
+          this.departmentsLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.departmentsError = this.readError(err);
+          this.departmentsLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onDepartmentChange(deptId: string) {
@@ -273,6 +309,9 @@ export class HomeComponent implements OnInit {
         if (!stillSelected) {
           this.selectedId = '';
           this.ratingScore = null;
+          this.commentText = '';
+          this.commentError = '';
+          this.commentResult = false;
         }
         this.log('loadMyGrievances:success', { count: this.grievances.length });
         this.myGrievancesLoading = false;
@@ -305,18 +344,85 @@ export class HomeComponent implements OnInit {
     }
     const payload = { grievanceId: this.selectedId, score: this.ratingScore };
     this.http
-      .post(`${this.auth.getBaseUrl()}/feedback-service/api/feedback/ratings`, payload, {
+      .post(`/feedback-service/api/feedback/ratings`, payload, {
         headers: this.authHeaders()
       })
       .subscribe({
         next: () => {
           this.ratingResult = true;
+          this.loadFeedback(this.selectedId);
           this.cdr.markForCheck();
         },
         error: err => {
           this.ratingError = this.readError(err);
           this.cdr.markForCheck();
         }
+      });
+  }
+
+  postComment() {
+    this.commentError = '';
+    this.commentResult = false;
+    if (!this.selectedId) {
+      this.commentError = 'Select a grievance first.';
+      return;
+    }
+    const selected = this.grievances.find(item => this.getId(item) === this.selectedId);
+    if (!this.isResolvedStatus(selected?.status)) {
+      this.commentError = 'You can comment only after the grievance is resolved.';
+      return;
+    }
+    if (!this.commentText.trim()) {
+      // Allow blank comment when only rating is submitted; treat as optional.
+      this.commentText = '';
+    }
+    const payload = { grievanceId: this.selectedId, comments: this.commentText.trim() };
+    this.http
+      .post(`/feedback-service/api/feedback/add-feedback`, payload, {
+        headers: this.authHeaders()
+      })
+      .subscribe({
+        next: () => {
+          this.commentResult = true;
+          this.commentText = '';
+          this.loadFeedback(this.selectedId);
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.commentError = this.readError(err);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private loadFeedback(grievanceId: string) {
+    if (!grievanceId) {
+      return;
+    }
+    this.log('feedback:fetch', { grievanceId });
+    this.http
+      .get<Feedback | Feedback[]>(`/feedback-service/api/feedback/grievance/${grievanceId}`, { headers: this.authHeaders() })
+      .pipe(
+        catchError(err => {
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            delete this.feedbackByGrievance[grievanceId];
+            this.cdr.markForCheck();
+            return of(null);
+          }
+          this.log('feedback:error', { grievanceId, error: this.readError(err) });
+          this.cdr.markForCheck();
+          return of(null);
+        })
+      )
+      .subscribe(res => {
+        const resolved = Array.isArray(res) ? res[0] ?? null : res;
+        if (resolved && (resolved.score !== undefined || resolved.comments !== undefined)) {
+          this.feedbackByGrievance[grievanceId] = resolved;
+        } else {
+          delete this.feedbackByGrievance[grievanceId];
+        }
+        this.cdr.markForCheck();
+        this.log('feedback:received', { grievanceId, feedback: resolved });
       });
   }
 
@@ -439,7 +545,8 @@ export class HomeComponent implements OnInit {
   }
 
   private isResolvedStatus(status?: string) {
-    return (status || '').trim().toLowerCase() === 'resolved';
+    const normalized = (status || '').trim().toLowerCase();
+    return normalized === 'resolved' || normalized === 'closed';
   }
 
   private log(message: string, data?: unknown) {

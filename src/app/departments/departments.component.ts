@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-departments',
@@ -13,6 +13,7 @@ import { forkJoin } from 'rxjs';
 })
 export class DepartmentsComponent implements OnInit {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   stateDepartments: any[] = [];
@@ -48,13 +49,12 @@ export class DepartmentsComponent implements OnInit {
     this.stateError = '';
     this.centralError = '';
 
-    forkJoin({
-      state: this.http.get<any[]>('/departments-api/stateGovernmentDepartments'),
-      central: this.http.get<any[]>('/departments-api/centralGovernmentDepartments')
-    }).subscribe({
+    this.http.get<any>(`${this.auth.getBaseUrl()}/auth/departments`, { headers: this.authHeaders() }).subscribe({
       next: res => {
-        this.stateDepartments = Array.isArray(res.state) ? res.state : [];
-        this.centralDepartments = Array.isArray(res.central) ? res.central : [];
+        this.stateDepartments = Array.isArray(res?.stateGovernmentDepartments) ? res.stateGovernmentDepartments : [];
+        this.centralDepartments = Array.isArray(res?.centralGovernmentDepartments)
+          ? res.centralGovernmentDepartments
+          : [];
         this.stateLoading = false;
         this.centralLoading = false;
         this.cdr.markForCheck();
@@ -68,6 +68,13 @@ export class DepartmentsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private authHeaders() {
+    const trimmed = this.auth.getToken().trim();
+    return trimmed
+      ? new HttpHeaders({ Authorization: `Bearer ${trimmed}`, 'Content-Type': 'application/json' })
+      : new HttpHeaders({ 'Content-Type': 'application/json' });
   }
 
   private readError(error: unknown) {

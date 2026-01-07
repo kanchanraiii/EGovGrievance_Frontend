@@ -16,6 +16,12 @@ type Grievance = {
   escalated?: boolean;
 };
 
+type Feedback = {
+  grievanceId?: string;
+  comments?: string;
+  score?: number;
+};
+
 @Component({
   selector: 'app-cw-dashboard',
   standalone: true,
@@ -40,22 +46,31 @@ type Grievance = {
             <button class="button ghost" type="button" (click)="loadAssigned()" [disabled]="assignedLoading">Refresh</button>
           </div>
           <div class="response error" *ngIf="assignedError">{{ assignedError }}</div>
-          <div class="card-grid" *ngIf="assignedList.length">
-            <article class="grievance-card" *ngFor="let g of assignedList; trackBy: trackGrievance">
-              <header class="grievance-head">
+          <div class="loading" *ngIf="assignedLoading">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Loading assigned grievances...</span>
+          </div>
+          <ul class="grievance-list" *ngIf="!assignedLoading && assignedList.length">
+            <li *ngFor="let g of assignedList; trackBy: trackGrievance">
+              <div class="row">
                 <div>
                   <div class="id">#{{ g.id }}</div>
                   <div class="muted">Dept: {{ g.departmentId || '—' }}</div>
                 </div>
-                <span class="status" [class.escalated]="g.escalated" [class.submitted]="g.status === 'SUBMITTED'">{{ g.status || 'N/A' }}</span>
-              </header>
+                <div class="chips">
+                  <span class="status" [class.escalated]="g.escalated" [class.submitted]="g.status === 'SUBMITTED'">{{ g.status || 'N/A' }}</span>
+                </div>
+              </div>
               <p class="description">{{ g.description || 'No description provided.' }}</p>
               <div class="meta">
                 <span *ngIf="g.updatedBy">Updated by: {{ g.updatedBy }}</span>
                 <span *ngIf="g.remarks">Remarks: {{ g.remarks }}</span>
               </div>
-            </article>
-          </div>
+              <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">
+                Feedback: {{ feedbackById[getId(g)]?.comments }}
+              </div>
+            </li>
+          </ul>
           <div class="response warn" *ngIf="!assignedLoading && !assignedList.length && !assignedError">No assigned grievances.</div>
         </section>
 
@@ -65,9 +80,14 @@ type Grievance = {
             <p class="helper">Mark a grievance as IN_PROGRESS, RESOLVED, or REJECTED.</p>
           </div>
           <div class="form-grid two-column">
-            <div>
-              <label class="field-label">Grievance ID</label>
-              <input class="field" [(ngModel)]="statusForm.grievanceId" />
+            <div class="full">
+              <label class="field-label">Grievance</label>
+              <select class="field" [(ngModel)]="statusForm.grievanceId" [disabled]="!assignedList.length">
+                <option value="" disabled>Select a grievance</option>
+                <option *ngFor="let g of assignedList; trackBy: trackGrievance" [value]="g.id || g.grievanceId">
+                  {{ g.id || g.grievanceId }} — {{ g.status || 'N/A' }}
+                </option>
+              </select>
             </div>
             <div>
               <label class="field-label">Status</label>
@@ -86,8 +106,9 @@ type Grievance = {
               <input class="field" [(ngModel)]="statusForm.remarks" />
             </div>
           </div>
+          <div class="inline-help warn" *ngIf="isSelectedEscalated()">This grievance is escalated and cannot be updated by case workers.</div>
           <div class="actions">
-            <button class="button" type="button" (click)="updateStatus()" [disabled]="statusSubmitting">
+            <button class="button" type="button" (click)="updateStatus()" [disabled]="statusSubmitting || !statusForm.grievanceId || isSelectedEscalated()">
               {{ statusSubmitting ? 'Updating...' : 'Update' }}
             </button>
           </div>
@@ -109,7 +130,8 @@ type Grievance = {
     .card-head h2{margin:0;font-size:1.12rem}
     .helper{margin:0;color:var(--muted);font-size:.95rem}
     .form-grid{display:grid;gap:.6rem}
-    .form-grid.two-column{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem}
+    .form-grid.two-column{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem}
+    .form-grid .full{grid-column:1/-1}
     .field-label{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
     .field{border:1px solid var(--border);border-radius:12px;padding:.7rem .85rem;font:inherit;background:#fff}
     .actions{display:flex;gap:.6rem;flex-wrap:wrap}
@@ -120,17 +142,22 @@ type Grievance = {
     .response.success{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
     .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
     .response.warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
-    .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;margin-top:.35rem}
-    .grievance-card{border:1px solid var(--border);border-radius:14px;padding:.9rem;background:#fff;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 12px 22px rgba(16,24,40,0.08)}
-    .grievance-card.escalated{border-color:#fca5a5;background:#fff1f2}
-    .grievance-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.65rem}
+    .grievance-list{list-style:none;padding:0;margin:.35rem 0 0;display:flex;flex-direction:column;gap:.7rem}
+    .grievance-list li{border:1px solid var(--border);border-radius:14px;padding:.9rem;background:#fff;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 12px 22px rgba(16,24,40,0.08)}
+    .row{display:flex;justify-content:space-between;align-items:flex-start;gap:.65rem;flex-wrap:wrap}
     .id{font-weight:800;font-size:1rem}
     .muted{color:var(--muted);font-size:.95rem}
     .status{border-radius:999px;padding:.3rem .7rem;font-size:.82rem;font-weight:700;background:#eef2fb;color:#1f4f93;border:1px solid rgba(31,79,147,0.2)}
     .status.submitted{background:#e0f2fe;color:#075985;border-color:#bae6fd}
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
+    .chips{display:flex;gap:.4rem;flex-wrap:wrap}
     .description{margin:0;font-size:1rem;line-height:1.45}
     .meta{display:flex;flex-wrap:wrap;gap:.55rem;font-size:.9rem;color:var(--muted)}
+    .feedback{font-size:.9rem;color:#0f172a;background:#f1f5f9;border-radius:10px;padding:.5rem .6rem;border:1px solid #e2e8f0}
+    .loading{display:flex;align-items:center;gap:.45rem;color:var(--muted)}
+    .spinner{width:18px;height:18px;border:3px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:spin 1s linear infinite}
+    .inline-help.warn{color:#b45309}
+    @keyframes spin{to{transform:rotate(360deg)}}
     @media (max-width:768px){
       .admin-shell{padding:1rem}
       .grid{grid-template-columns:1fr}
@@ -154,13 +181,20 @@ export class CwDashboardComponent implements OnInit {
   assignedList: Grievance[] = [];
   assignedLoading = false;
   assignedError = '';
+  feedbackById: Record<string, Feedback> = {};
 
   statusForm = { grievanceId: '', status: 'IN_PROGRESS', updatedBy: '', remarks: '' };
   statusSubmitting = false;
   statusSuccess = '';
   statusError = '';
 
+  get selectedGrievance(): Grievance | undefined {
+    return this.assignedList.find(g => (g.id || g.grievanceId) === this.statusForm.grievanceId);
+  }
+
   ngOnInit(): void {
+    const email = this.auth.getProfile().email || '';
+    this.statusForm.updatedBy = email;
     this.loadAssigned();
   }
 
@@ -170,7 +204,15 @@ export class CwDashboardComponent implements OnInit {
     this.http.get<Grievance[]>(`${this.auth.getBaseUrl()}/grievance-service/api/grievances/my-assigned`, { headers: this.authHeaders() }).subscribe({
       next: res => {
         this.assignedList = Array.isArray(res) ? res : [];
+        if (this.assignedList.length) {
+          const current = this.statusForm.grievanceId;
+          const exists = this.assignedList.some(g => (g.id || g.grievanceId) === current);
+          this.statusForm.grievanceId = exists ? current : (this.assignedList[0].id || this.assignedList[0].grievanceId || '');
+        } else {
+          this.statusForm.grievanceId = '';
+        }
         this.assignedLoading = false;
+        this.loadFeedbackForResolved(this.assignedList);
         this.cdr.markForCheck();
       },
       error: err => {
@@ -184,6 +226,11 @@ export class CwDashboardComponent implements OnInit {
   updateStatus() {
     this.statusError = '';
     this.statusSuccess = '';
+    if (this.isSelectedEscalated()) {
+      this.statusError = 'Escalated grievances cannot be updated by case workers.';
+      this.cdr.markForCheck();
+      return;
+    }
     if (!this.statusForm.grievanceId.trim()) {
       this.statusError = 'Grievance ID is required.';
       this.cdr.markForCheck();
@@ -215,6 +262,38 @@ export class CwDashboardComponent implements OnInit {
   private authHeaders() {
     const trimmed = this.auth.getToken().trim();
     return trimmed ? new HttpHeaders({ Authorization: `Bearer ${trimmed}`, 'Content-Type': 'application/json' }) : new HttpHeaders({ 'Content-Type': 'application/json' });
+  }
+
+  isSelectedEscalated() {
+    const status = this.selectedGrievance?.status || '';
+    return status.toLowerCase() === 'escalated';
+  }
+
+  getId(g: Grievance) {
+    return g.id || g.grievanceId || '';
+  }
+
+  private isResolved(status?: string) {
+    const normalized = (status || '').toLowerCase();
+    return normalized === 'resolved' || normalized === 'closed';
+  }
+
+  private loadFeedbackForResolved(list: Grievance[]) {
+    list.forEach(item => {
+      const id = this.getId(item);
+      if (!id || !this.isResolved(item.status) || this.feedbackById[id]) return;
+      this.http
+        .get<Feedback>(`/feedback-service/api/feedback/grievance/${id}`, { headers: this.authHeaders() })
+        .subscribe({
+          next: res => {
+            this.feedbackById[id] = res;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            // Ignore missing feedback.
+          }
+        });
+    });
   }
 
   private readError(error: unknown) {
