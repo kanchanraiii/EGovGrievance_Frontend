@@ -102,7 +102,7 @@ type FileMeta = {
         <section class="card">
           <div class="card-head">
             <h2>Update status</h2>
-            <p class="helper">Mark a grievance as IN_PROGRESS, RESOLVED, or REJECTED.</p>
+            <p class="helper">Mark a grievance as IN_PROGRESS, RESOLVED, or CLOSED.</p>
           </div>
           <div class="form-grid two-column">
             <div class="full">
@@ -119,7 +119,7 @@ type FileMeta = {
               <select class="field" [(ngModel)]="statusForm.status">
                 <option value="IN_PROGRESS">IN_PROGRESS</option>
                 <option value="RESOLVED">RESOLVED</option>
-                <option value="REJECTED">REJECTED</option>
+                <option value="CLOSED">CLOSED</option>
               </select>
             </div>
             <div>

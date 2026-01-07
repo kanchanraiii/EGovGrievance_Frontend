@@ -63,7 +63,7 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         <section class="card">
           <div class="card-head">
             <h2>Update grievance status</h2>
-            <p class="helper">Move a grievance to IN_PROGRESS, RESOLVED, or REJECTED.</p>
+            <p class="helper">Move a grievance to IN_PROGRESS, RESOLVED, or CLOSED.</p>
           </div>
           <div class="form-grid two-column">
             <div>
@@ -75,7 +75,7 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
               <select class="field" [(ngModel)]="statusForm.status">
                 <option value="IN_PROGRESS">IN_PROGRESS</option>
                 <option value="RESOLVED">RESOLVED</option>
-                <option value="REJECTED">REJECTED</option>
+                <option value="CLOSED">CLOSED</option>
               </select>
             </div>
             <div>
