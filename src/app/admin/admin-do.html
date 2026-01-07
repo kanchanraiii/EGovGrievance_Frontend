@@ -1,0 +1,76 @@
+<section class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">Admin Console</p>
+          <h1>Create Department Officer</h1>
+          <p class="subtitle">Register a Department Officer (DO) for a specific department.</p>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Department Officer details</h2>
+          <p class="helper">All fields are required.</p>
+        </div>
+
+        <form #doForm="ngForm" (ngSubmit)="registerDO(doForm)">
+          <div class="form-inline">
+            <div>
+              <label class="field-label">Full name</label>
+              <div class="field-error" *ngIf="fullNameModel?.invalid && (fullNameModel.dirty || fullNameModel.touched)">
+                <small *ngIf="fullNameModel.errors?.['required']">Full name is required.</small>
+                <small *ngIf="fullNameModel.errors?.['minlength']">Enter at least 2 characters.</small>
+              </div>
+              <input class="field" name="fullName" [(ngModel)]="form.fullName" #fullNameModel="ngModel" required minlength="2" placeholder="Enter DO name"/>
+            </div>
+
+            <div>
+              <label class="field-label">Email</label>
+              <div class="field-error" *ngIf="emailModel?.invalid && (emailModel.dirty || emailModel.touched)">
+                <small *ngIf="emailModel.errors?.['required']">Email is required.</small>
+                <small *ngIf="emailModel.errors?.['email']">Enter a valid email.</small>
+              </div>
+              <input class="field" name="email" type="email" [(ngModel)]="form.email" #emailModel="ngModel" required email placeholder="youremail@example.com"/>
+            </div>
+
+            <div>
+              <label class="field-label">Phone</label>
+              <div class="field-error" *ngIf="phoneModel?.invalid && (phoneModel.dirty || phoneModel.touched)">
+                <small *ngIf="phoneModel.errors?.['required']">Phone is required.</small>
+                <small *ngIf="phoneModel.errors?.['pattern']">Enter a 10 digit phone number.</small>
+              </div>
+              <input class="field" name="phone" [(ngModel)]="form.phone" #phoneModel="ngModel" required pattern="^[0-9]{10}$" placeholder="Enter a valid 10 digit phone no"/>
+            </div>
+
+            <div>
+              <label class="field-label">Password</label>
+              <div class="field-error" *ngIf="passwordModel?.invalid && (passwordModel.dirty || passwordModel.touched)">
+                <small *ngIf="passwordModel.errors?.['required']">Password is required.</small>
+                <small *ngIf="passwordModel.errors?.['minlength']">Password must be at least 8 characters.</small>
+              </div>
+              <input class="field" name="password" type="password" [(ngModel)]="form.password" #passwordModel="ngModel" required minlength="8" placeholder="Enter your password"/>
+            </div>
+
+            <div>
+              <label class="field-label">Department ID</label>
+              <div class="field-error" *ngIf="departmentModel?.invalid && (departmentModel.dirty || departmentModel.touched)">
+                <small *ngIf="departmentModel.errors?.['required']">Department ID is required.</small>
+              </div>
+              <input class="field" name="departmentId" [(ngModel)]="form.departmentId" #departmentModel="ngModel" required />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="button" type="submit" [disabled]="submitting || doForm.invalid">
+              {{ submitting ? 'Creating...' : 'Create DO' }}
+            </button>
+            <button class="button secondary" type="button" (click)="resetForm(doForm)" [disabled]="submitting">
+              Reset
+            </button>
+          </div>
+        </form>
+
+        <div class="response success" *ngIf="success">Department Officer created.</div>
+        <div class="response error" *ngIf="error">{{ error }}</div>
+      </section>
+    </section>

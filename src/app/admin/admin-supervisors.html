@@ -1,0 +1,60 @@
+<section class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">Admin Console</p>
+          <h1>Supervisory Officers</h1>
+          <p class="subtitle">Create Supervisory Officers (SO).</p>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Register Supervisory Officer</h2>
+          <p class="helper">Creates a Supervisory Officer.</p>
+        </div>
+
+        <form #soFormRef="ngForm" (ngSubmit)="registerSO(soFormRef)">
+          <div class="form-grid">
+            <label class="field-label">Full name</label>
+            <div class="field-error" *ngIf="soNameModel?.invalid && (soNameModel.dirty || soNameModel.touched)">
+              <small *ngIf="soNameModel.errors?.['required']">Full name is required.</small>
+              <small *ngIf="soNameModel.errors?.['minlength']">Enter at least 2 characters.</small>
+            </div>
+            <input class="field" name="fullName" [(ngModel)]="soForm.fullName" #soNameModel="ngModel" required minlength="2" placeholder="Enter SO name" />
+
+            <label class="field-label">Email</label>
+            <div class="field-error" *ngIf="soEmailModel?.invalid && (soEmailModel.dirty || soEmailModel.touched)">
+              <small *ngIf="soEmailModel.errors?.['required']">Email is required.</small>
+              <small *ngIf="soEmailModel.errors?.['email']">Enter a valid email.</small>
+            </div>
+            <input class="field" name="email" type="email" [(ngModel)]="soForm.email" #soEmailModel="ngModel" required email placeholder="yourmail@example.com"/>
+
+            <label class="field-label">Phone</label>
+            <div class="field-error" *ngIf="soPhoneModel?.invalid && (soPhoneModel.dirty || soPhoneModel.touched)">
+              <small *ngIf="soPhoneModel.errors?.['required']">Phone is required.</small>
+              <small *ngIf="soPhoneModel.errors?.['pattern']">Enter a 10 digit phone number.</small>
+            </div>
+            <input class="field" name="phone" [(ngModel)]="soForm.phone" #soPhoneModel="ngModel" required pattern="^[0-9]{10}$" placeholder="Enter a valid 10 digit phone no" />
+
+            <label class="field-label">Password</label>
+            <div class="field-error" *ngIf="soPasswordModel?.invalid && (soPasswordModel.dirty || soPasswordModel.touched)">
+              <small *ngIf="soPasswordModel.errors?.['required']">Password is required.</small>
+              <small *ngIf="soPasswordModel.errors?.['minlength']">Password must be at least 8 characters.</small>
+            </div>
+            <input class="field" name="password" type="password" [(ngModel)]="soForm.password" #soPasswordModel="ngModel" required minlength="8" placeholder="Enter a strong password" />
+          </div>
+
+          <div class="actions">
+            <button class="button" type="submit" [disabled]="soSubmitting || soFormRef.invalid">
+              {{ soSubmitting ? 'Creating...' : 'Create SO' }}
+            </button>
+            <button class="button secondary" type="button" (click)="resetForm(soFormRef)" [disabled]="soSubmitting">
+              Reset
+            </button>
+          </div>
+        </form>
+
+        <div class="response success" *ngIf="soSuccess">Supervisory Officer created.</div>
+        <div class="response error" *ngIf="soError">{{ soError }}</div>
+      </section>
+    </section>

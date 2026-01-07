@@ -126,6 +126,7 @@ export class SidebarComponent {
   collapsed = signal(false);
   private auth = inject(AuthService);
   menuOpen = signal(false);
+  navOpen = signal(false);
   private defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/6596/6596121.png';
 
   toggle() {
@@ -182,6 +183,20 @@ export class SidebarComponent {
 
   toggleMenu() {
     this.menuOpen.update(v => !v);
+    if (this.menuOpen()) {
+      this.navOpen.set(false);
+    }
+  }
+
+  toggleNav() {
+    this.navOpen.update(v => !v);
+    if (this.navOpen()) {
+      this.menuOpen.set(false);
+    }
+  }
+
+  closeNav() {
+    this.navOpen.set(false);
   }
 
   get navSections(): NavSection[] {

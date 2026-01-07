@@ -101,6 +101,17 @@ type NormalizedGrievance = {
     .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
     .muted{color:var(--muted);font-size:.9rem}
     .chart-wrap{min-height:120px;max-height:180px;display:flex;align-items:center;justify-content:center}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .grid{grid-template-columns:1fr}
+      .card{padding:.85rem}
+      h1{font-size:1.4rem}
+    }
+    @media (max-width:540px){
+      .admin-header{flex-direction:column}
+      .actions{width:100%}
+      .button{width:100%;justify-content:center}
+    }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

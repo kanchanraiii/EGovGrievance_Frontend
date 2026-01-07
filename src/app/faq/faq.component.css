@@ -1,5 +1,5 @@
 .faq {
-  min-height: calc(100vh - 3rem);
+  min-height: auto;
   background: var(--panel);
   border-radius: 16px;
   box-shadow: var(--shadow);
@@ -66,5 +66,14 @@ h1 {
 @media (max-width: 720px) {
   .faq {
     padding: 1.25rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .faq-list {
+    grid-template-columns: 1fr;
+  }
+  .faq-card {
+    padding: 0.9rem;
   }
 }

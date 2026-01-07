@@ -2,7 +2,7 @@
   display: block;
 }
 .about {
-  min-height: calc(100vh - 3rem);
+  min-height: auto;
   background: var(--panel);
   border-radius: 16px;
   box-shadow: var(--shadow);
@@ -110,8 +110,32 @@ h1 {
   margin: 0;
   color: var(--muted);
 }
+
+@media (max-width: 960px) {
+  .about {
+    padding: 1.6rem;
+  }
+  .title-with-logo {
+    flex-wrap: wrap;
+  }
+  .hero-logo {
+    height: 5rem;
+  }
+}
 @media (max-width: 720px) {
   .hero-logo {
     height: 2.5rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .about {
+    gap: 1.3rem;
+  }
+  .features {
+    grid-template-columns: 1fr;
+  }
+  .large-features {
+    padding: 1.4rem;
   }
 }

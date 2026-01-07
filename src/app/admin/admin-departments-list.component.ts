@@ -102,6 +102,18 @@ type Department = {
     .loading,.empty{padding:.6rem .75rem;border:1px dashed var(--border);border-radius:10px;color:var(--muted);background:#f8f9ff}
     .button{border:1px solid rgba(31,79,147,0.2);border-radius:999px;background:#eef2fb;color:var(--accent);padding:.55rem 1.1rem;font-weight:700;cursor:pointer}
     .button[disabled]{opacity:.6;cursor:not-allowed}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .grid{grid-template-columns:1fr}
+      .card{padding:.9rem}
+      .dept-row{flex-direction:column;align-items:flex-start}
+      .admin-header{gap:.6rem}
+    }
+    @media (max-width:560px){
+      .button{width:100%;justify-content:center}
+      .dept-row-actions{width:100%}
+      .chip{width:fit-content}
+    }
     `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

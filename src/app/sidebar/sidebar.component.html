@@ -1,11 +1,11 @@
-﻿<aside class="sidebar" [class.collapsed]="collapsed()">
+<aside class="sidebar" [class.collapsed]="collapsed()" [class.nav-open]="navOpen()">
   <div class="brand">
     <div class="brand-text" *ngIf="!collapsed()">
       <div class="brand-title">E-Grievance</div>
       <div class="brand-sub">Redressal Portal</div>
     </div>
     <button
-      class="icon-button"
+      class="icon-button collapse-btn"
       (click)="toggle()"
       [attr.aria-expanded]="!collapsed()"
       [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
@@ -13,9 +13,18 @@
     >
       {{ collapsed() ? '>>' : '<<' }}
     </button>
+    <button
+      class="mobile-menu"
+      type="button"
+      (click)="toggleNav()"
+      [attr.aria-expanded]="navOpen()"
+      aria-label="Toggle navigation"
+    >
+      {{ navOpen() ? 'Close' : 'Menu' }}
+    </button>
   </div>
 
-  <nav class="nav">
+  <nav class="nav" [class.open]="navOpen()">
     <ng-container *ngFor="let section of navSections; trackBy: trackSection">
       <div class="nav-section-title" *ngIf="!collapsed()">{{ section.title }}</div>
       <a
@@ -25,6 +34,7 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="item.exact ? { exact: true } : { exact: false }"
         [fragment]="item.fragment"
+        (click)="closeNav()"
       >
         <span class="nav-short">{{ item.short }}</span>
         <span class="nav-text">{{ item.label }}</span>
@@ -47,7 +57,7 @@
     </div>
   </ng-container>
   <ng-template #signupLink>
-    <a class="nav-item signup signup-bottom" routerLink="/auth" routerLinkActive="active">
+    <a class="nav-item signup signup-bottom" routerLink="/auth" routerLinkActive="active" (click)="closeNav()">
       <span class="nav-short">S</span>
       <span class="nav-text">Sign Up</span>
     </a>

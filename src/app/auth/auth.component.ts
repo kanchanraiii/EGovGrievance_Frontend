@@ -66,6 +66,62 @@ export class AuthComponent {
     this.registerError = '';
   }
 
+  // Reset handlers for forms
+  resetLoginForm(form?: import('@angular/forms').NgForm) {
+    this.loginForm = { email: '', password: '' };
+    this.loginError = '';
+    if (form) {
+      form.resetForm(this.loginForm);
+    }
+    this.cdr.markForCheck();
+  }
+
+  resetRegisterForm(form?: import('@angular/forms').NgForm) {
+    this.registerForm = { fullName: '', email: '', phone: '', password: '' };
+    this.registerError = '';
+    this.registerResult = false;
+    if (form) {
+      form.resetForm(this.registerForm);
+    }
+    this.cdr.markForCheck();
+  }
+
+  // Password requirement helpers for signup display
+  get pwMinLen() {
+    return (this.registerForm.password || '').trim().length >= 8;
+  }
+
+  get pwHasUpper() {
+    return /[A-Z]/.test(this.registerForm.password || '');
+  }
+
+  get pwHasLower() {
+    return /[a-z]/.test(this.registerForm.password || '');
+  }
+
+  get pwHasNumber() {
+    return /[0-9]/.test(this.registerForm.password || '');
+  }
+
+  get pwHasSymbol() {
+    return /[^A-Za-z0-9]/.test(this.registerForm.password || '');
+  }
+
+  get pwValidationMessages(): string[] {
+    const msgs: string[] = [];
+    const val = (this.registerForm.password || '').trim();
+    if (!val) {
+      msgs.push('Password is required.');
+      return msgs;
+    }
+    if (!this.pwMinLen) msgs.push('At least 8 characters');
+    if (!this.pwHasUpper) msgs.push('At least one uppercase letter');
+    if (!this.pwHasLower) msgs.push('At least one lowercase letter');
+    if (!this.pwHasNumber) msgs.push('At least one number');
+    if (!this.pwHasSymbol) msgs.push('At least one symbol (e.g. !@#$%)');
+    return msgs;
+  }
+
   loginCitizen() {
     this.loginError = '';
     if (this.loginValidation) {
@@ -177,18 +233,18 @@ export class AuthComponent {
     return String(error);
   }
 
-  private isEmailValid(email: string) {
+  isEmailValid(email: string) {
     const trimmed = email.trim();
     // simple RFC-ish email check
     return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed);
   }
 
-  private isPhoneValid(phone: string) {
+  isPhoneValid(phone: string) {
     // allow digits only, 10 digits
     return /^\d{10}$/.test(phone.trim());
   }
 
-  private isStrongPassword(password: string) {
+  isStrongPassword(password: string) {
     const trimmed = password.trim();
     return /[a-z]/.test(trimmed) && /[A-Z]/.test(trimmed) && /\d/.test(trimmed) && /[^A-Za-z0-9]/.test(trimmed) && trimmed.length >= 8;
   }

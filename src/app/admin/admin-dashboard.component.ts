@@ -49,6 +49,11 @@ import { RouterModule } from '@angular/router';
     .card-head h2{margin:0;font-size:1.05rem}
     .helper{margin:0;color:var(--muted)}
     .muted{color:var(--muted);font-size:.9rem}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .grid{grid-template-columns:1fr}
+      h1{font-size:1.6rem}
+    }
     `,
   ],
 })

@@ -99,6 +99,12 @@ type DepartmentMeta = {
     .field{border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;font:inherit;background:#fff}
     .field-textarea{resize:vertical;border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;font:inherit;background:#fff}
     .chip-link{border:1px solid var(--border);border-radius:10px;padding:.4rem .75rem;text-decoration:none;color:var(--accent);background:#eef2fb}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .card{padding:.9rem}
+      .admin-header{flex-direction:column;align-items:flex-start}
+      .actions{justify-content:flex-start}
+    }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

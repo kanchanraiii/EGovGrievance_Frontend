@@ -147,6 +147,17 @@ import { AuthService } from '../auth/auth.service';
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .description{margin:0;font-size:.95rem}
     .meta{display:flex;flex-wrap:wrap;gap:.45rem;font-size:.85rem;color:var(--muted)}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .grid{grid-template-columns:1fr}
+      .actions{justify-content:flex-start}
+      .card{padding:.9rem}
+      h1{font-size:1.6rem}
+    }
+    @media (max-width:560px){
+      .form-grid.two-column{grid-template-columns:1fr}
+      .card-grid{grid-template-columns:1fr}
+    }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

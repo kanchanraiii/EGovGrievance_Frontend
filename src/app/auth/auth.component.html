@@ -26,37 +26,62 @@
       <button type="button" class="link-button" (click)="goToStaff()">Login here</button>
     </div>
 
-    <form *ngIf="mode === 'login'" (ngSubmit)="loginCitizen()" class="form">
+    <form #loginFormRef="ngForm" *ngIf="mode === 'login'" (ngSubmit)="loginCitizen()" class="form">
       <label class="field-label">Email</label>
       <input placeholder="yourmail@example.com"
         class="field"
         type="email"
         [(ngModel)]="loginForm.email"
         name="loginEmail"
+        #loginEmailModel="ngModel"
+        required
         (ngModelChange)="onLoginChange()"
       />
+      <div class="field-error" *ngIf="loginEmailModel?.invalid && loginEmailModel.dirty">
+        <small *ngIf="loginEmailModel.errors?.['required']">Email is required.</small>
+        <small *ngIf="loginEmailModel.errors?.['email']">Enter a valid email (e.g., user@example.com).</small>
+      </div>
+
       <label class="field-label">Password</label>
-      <input placeholder="Enter a strong password"
+      <input placeholder="Enter your password"
         class="field"
         type="password"
         [(ngModel)]="loginForm.password"
         name="loginPassword"
+        #loginPasswordModel="ngModel"
+        required minlength="8"
         (ngModelChange)="onLoginChange()"
       />
+      <div class="field-error" *ngIf="loginPasswordModel?.invalid && loginPasswordModel.dirty">
+        <small *ngIf="loginPasswordModel.errors?.['required']">Password is required.</small>
+        <small *ngIf="loginPasswordModel.errors?.['minlength']">Enter at least 8 characters.</small>
+      </div>
+
       <div class="response warn" *ngIf="loginValidation">{{ loginValidation }}</div>
-      <button class="button" type="submit" [disabled]="!!loginValidation">Login</button>
+      <div class="form-actions">
+        <button class="button" type="submit" [disabled]="!!loginValidation">Login</button>
+        <button class="button secondary" type="button" (click)="resetLoginForm(loginFormRef)">Reset</button>
+      </div>
+
       <div class="response error" *ngIf="loginError">{{ loginError }}</div>
     </form>
 
-    <form *ngIf="mode === 'signup'" (ngSubmit)="registerCitizen()" class="form">
+    <form #signupFormRef="ngForm" *ngIf="mode === 'signup'" (ngSubmit)="registerCitizen()" class="form">
       <label class="field-label">Full name</label>
       <input 
         placeholder="John Doe"
         class="field"
         [(ngModel)]="registerForm.fullName"
         name="fullName"
+        #fullNameModel="ngModel"
+        required minlength="6"
         (ngModelChange)="onRegisterChange()"
       />
+      <div class="field-error" *ngIf="fullNameModel?.invalid && fullNameModel.dirty">
+        <small *ngIf="fullNameModel.errors?.['required']">Full name is required.</small>
+        <small *ngIf="fullNameModel.errors?.['minlength']">Full name must be at least 6 characters.</small>
+      </div>
+
       <label class="field-label">Email</label>
       <input
         placeholder="yourmail@example.com"
@@ -64,27 +89,56 @@
         type="email"
         [(ngModel)]="registerForm.email"
         name="registerEmail"
+        #registerEmailModel="ngModel"
+        required
         (ngModelChange)="onRegisterChange()"
       />
+      <div class="field-error" *ngIf="registerEmailModel?.invalid && registerEmailModel.dirty">
+        <small *ngIf="registerEmailModel.errors?.['required']">Email is required.</small>
+        <small *ngIf="registerEmailModel.errors?.['email']">Enter a valid email (e.g., user@example.com).</small>
+      </div>
+
       <label class="field-label">Phone</label>
       <input
         placeholder="Your 10 digit phone number"
         class="field"
         [(ngModel)]="registerForm.phone"
         name="phone"
+        #phoneModel="ngModel"
+        required pattern="^[0-9]{10}$"
         (ngModelChange)="onRegisterChange()"
       />
+      <div class="field-error" *ngIf="phoneModel?.invalid && phoneModel.dirty">
+        <small *ngIf="phoneModel.errors?.['required']">Phone is required.</small>
+        <small *ngIf="phoneModel.errors?.['pattern']">Phone must be 10 digits.</small>
+      </div>
+
+      <div class="field-error" *ngIf="pwValidationMessages.length">
+        <small *ngFor="let msg of pwValidationMessages">{{ msg }}</small>
+      </div>
+
       <label class="field-label">Password</label>
       <input
-        placeholder="Enter a strong password"
+        placeholder="Password (8+ chars, upper+lower+number+symbol)"
         class="field"
         type="password"
         [(ngModel)]="registerForm.password"
         name="registerPassword"
+        #registerPasswordModel="ngModel"
+        required minlength="8"
         (ngModelChange)="onRegisterChange()"
       />
+      <div class="field-error" *ngIf="registerPasswordModel?.dirty">
+        <small *ngIf="registerForm.password && registerForm.password.trim().length < 8">Password must be at least 8 characters.</small>
+        <small *ngIf="registerForm.password && !isStrongPassword(registerForm.password)">Password must include upper, lower, number, and symbol.</small>
+      </div>
+
       <div class="response warn" *ngIf="registerValidation">{{ registerValidation }}</div>
-      <button class="button" type="submit" [disabled]="!!registerValidation">Create Account</button>
+      <div class="form-actions">
+        <button class="button" type="submit" [disabled]="!!registerValidation">Create Account</button>
+        <button class="button secondary" type="button" (click)="resetRegisterForm(signupFormRef)">Reset</button>
+      </div>
+
       <div class="response error" *ngIf="registerError">{{ registerError }}</div>
       <div class="response success" *ngIf="registerResult">
         Account created. You can log in now.

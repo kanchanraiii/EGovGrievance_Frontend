@@ -118,6 +118,17 @@ import { AuthService } from '../auth/auth.service';
     .cat-actions{display:flex;justify-content:flex-end}
     .chip{border:none;border-radius:10px;padding:.4rem .75rem;background:#eef2fb;color:#1f4f93;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.25rem}
     .chip.danger{background:#fff1f2;color:#b42318}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .card{padding:.9rem}
+      .form-grid.two-column{grid-template-columns:1fr}
+      .category-header{flex-direction:column;align-items:flex-start}
+    }
+    @media (max-width:560px){
+      .subcat-row{grid-template-columns:1fr}
+      .actions{flex-direction:column}
+      .button{width:100%;justify-content:center}
+    }
     `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -3,7 +3,7 @@
 }
 
 .page-frame {
-  min-height: calc(100vh - 3rem);
+  min-height: auto;
   background: linear-gradient(180deg, #ffffff 0%, #f5f7fb 100%);
   border-radius: 16px;
   box-shadow: var(--shadow);
@@ -427,6 +427,22 @@ h1 {
   accent-color: var(--accent);
 }
 
+@media (max-width: 960px) {
+  .page-frame {
+    padding: 1.4rem;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .title-with-logo {
+    flex-wrap: wrap;
+  }
+  .actions {
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 720px) {
   .page-frame {
     padding: 1.25rem;
@@ -441,5 +457,18 @@ h1 {
 
   .row-meta {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 540px) {
+  .card {
+    padding: 1rem;
+  }
+  .badge.large {
+    width: 100%;
+    justify-content: center;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
   }
 }

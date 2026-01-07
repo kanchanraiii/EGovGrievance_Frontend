@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 
@@ -18,29 +18,49 @@ import { AuthService } from '../auth/auth.service';
           <p class="subtitle">Use your supervisory officer credentials.</p>
         </header>
 
-        <form (ngSubmit)="login()" class="form">
+        <form #loginFormRef="ngForm" (ngSubmit)="login()" class="form">
           <label class="field-label">Email</label>
           <input
+            placeholder="yourmail@example.com"
             class="field"
             type="email"
             [(ngModel)]="form.email"
             name="loginEmail"
+            #loginEmailModel="ngModel"
+            required
             (ngModelChange)="onChange()"
           />
+          <div class="field-error" *ngIf="loginEmailModel?.invalid && loginEmailModel.dirty">
+            <small *ngIf="loginEmailModel.errors?.['required']">Email is required.</small>
+            <small *ngIf="loginEmailModel.errors?.['email']">Enter a valid email.</small>
+          </div>
+
           <label class="field-label">Password</label>
           <input
+            placeholder="Enter your password"
             class="field"
             type="password"
             [(ngModel)]="form.password"
             name="loginPassword"
+            #loginPasswordModel="ngModel"
+            required minlength="8"
             (ngModelChange)="onChange()"
           />
+          <div class="field-error" *ngIf="loginPasswordModel?.invalid && loginPasswordModel.dirty">
+            <small *ngIf="loginPasswordModel.errors?.['required']">Password is required.</small>
+            <small *ngIf="loginPasswordModel.errors?.['minlength']">Enter at least 8 characters.</small>
+          </div>
+
           <div class="response warn" *ngIf="validation">{{ validation }}</div>
-          <button class="button" type="submit" [disabled]="!!validation || submitting">
-            {{ submitting ? 'Signing in...' : 'Login' }}
-          </button>
+          <div class="form-actions">
+            <button class="button" type="submit" [disabled]="!!validation || submitting">
+              {{ submitting ? 'Signing in...' : 'Login' }}
+            </button>
+            <button class="button secondary" type="button" (click)="resetLoginForm(loginFormRef)">Reset</button>
+          </div>
+
           <div class="response error" *ngIf="error">{{ error }}</div>
-        </form>
+        </form> 
       </div>
     </section>
   `,
@@ -56,10 +76,13 @@ import { AuthService } from '../auth/auth.service';
     .field{border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;font:inherit;background:#fff}
     .button{margin-top:.4rem;border:none;border-radius:999px;background:var(--accent);color:#fff;padding:.6rem 1.1rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
     .button[disabled]{opacity:.6;cursor:not-allowed}
+    .field-error{color:#9f1239;font-size:.8rem;margin:0.18rem 0 0}
+    .form-actions{display:flex;gap:0.5rem;align-items:center;margin-top:0.4rem}
+    .button.secondary{background:transparent;color:var(--muted);border:1px solid var(--border);box-shadow:none}
     .response{margin-top:.4rem;border-radius:10px;padding:.6rem .75rem;font-size:.8rem}
     .response.error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
     .response.warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
-    `,
+    `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -81,6 +104,13 @@ export class SupervisorAuthComponent {
 
   onChange() {
     this.error = '';
+  }
+
+  resetLoginForm(form?: NgForm) {
+    this.form = { email: '', password: '' };
+    this.error = '';
+    if (form) form.resetForm();
+    this.cdr.markForCheck();
   }
 
   login() {

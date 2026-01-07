@@ -131,6 +131,17 @@ type Grievance = {
     .status.escalated{background:#fee2e2;color:#b91c1c;border:1px solid #fecdd3}
     .description{margin:0;font-size:1rem;line-height:1.45}
     .meta{display:flex;flex-wrap:wrap;gap:.55rem;font-size:.9rem;color:var(--muted)}
+    @media (max-width:768px){
+      .admin-shell{padding:1rem}
+      .grid{grid-template-columns:1fr}
+      .card{padding:1rem}
+      .form-grid.two-column{grid-template-columns:1fr}
+    }
+    @media (max-width:560px){
+      .actions{flex-direction:column}
+      .button{width:100%;justify-content:center}
+      .card-grid{grid-template-columns:1fr}
+    }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -32,3 +32,23 @@ body {
   background:
     linear-gradient(180deg, #f8f9fb 0%, #eef2f7 100%);
 }
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media (max-width: 640px) {
+  :root {
+    font-size: 15px;
+  }
+}

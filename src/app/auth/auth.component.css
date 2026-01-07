@@ -3,7 +3,7 @@
 }
 
 .auth-shell {
-  min-height: calc(100vh - 3rem);
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,7 +11,7 @@
 }
 
 .panel {
-  width: min(520px, 100%);
+  width: min(640px, 100%);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -109,6 +109,17 @@ h1 {
   font: inherit;
   background: #fff;
 }
+.field-error {
+  color: #9f1239;
+  font-size: 0.8rem;
+  margin: 0.18rem 0 0;
+}
+.form-actions{display:flex;gap:0.5rem;align-items:center;margin-top:0.4rem}
+.button.secondary{background:transparent;color:var(--muted);border:1px solid var(--border);box-shadow:none}
+.pw-req-list{display:flex;flex-direction:column;gap:0.18rem;margin-bottom:0.25rem;font-size:0.9rem}
+.pw-req-item{color:var(--muted)}
+.pw-req-item.valid{color:#166534}
+.pw-req-item.invalid{color:#9f1239}
 
 .button {
   margin-top: 0.4rem;
@@ -144,4 +155,23 @@ h1 {
   background: #fff7ed;
   color: #b45309;
   border: 1px solid #fed7aa;
+}
+
+@media (max-width: 720px) {
+  .auth-shell {
+    padding: 1.25rem;
+  }
+  .panel {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .toggle {
+    flex-direction: column;
+  }
+  .staff-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

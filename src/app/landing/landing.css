@@ -2,7 +2,7 @@
   display: block;
 }
 .landing {
-  min-height: calc(100vh - 3rem);
+  min-height: auto;
   background: var(--panel);
   border-radius: 16px;
   box-shadow: var(--shadow);
@@ -158,6 +158,22 @@ h1 {
   background: linear-gradient(90deg, rgba(31, 79, 147, 0.35), rgba(31, 79, 147, 0));
   display: block;
 }
+
+@media (max-width: 960px) {
+  .landing {
+    padding: 1.6rem;
+  }
+  .hero {
+    max-width: 100%;
+  }
+  .title-with-logo {
+    flex-wrap: wrap;
+  }
+  .hero-logo {
+    height: 5rem;
+  }
+}
+
 @media (max-width: 720px) {
   .landing {
     padding: 1.4rem;
@@ -173,5 +189,20 @@ h1 {
   }
   .flow-connector {
     display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .landing {
+    gap: 1.25rem;
+  }
+  .title-with-logo {
+    gap: 0.4rem;
+  }
+  .panels {
+    grid-template-columns: 1fr;
+  }
+  .cta {
+    width: 100%;
   }
 }
