@@ -34,6 +34,7 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         </div>
       </header>
 
+      <ng-container *ngIf="!showGrievances">
       <div class="grid">
         <section class="card">
           <div class="card-head">
@@ -126,6 +127,7 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         </div>
         <div class="response warn" *ngIf="!caseWorkersLoading && !caseWorkers.length && !caseWorkersError">No case workers found.</div>
       </section>
+      </ng-container>
 
       <section class="card" *ngIf="showGrievances">
         <div class="card-head">
@@ -155,8 +157,9 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
             </div>
             <div class="feedback" *ngIf="feedbackById[getId(g)]?.comments">Feedback: {{ feedbackById[getId(g)]?.comments }}</div>
             <div class="attachments">
-              <button class="link-button" type="button" (click)="loadAttachments(getId(g))">
-                {{ attachmentsLoading[getId(g)] ? 'Loading attachments...' : 'Load attachments' }}
+              <button class="link-button" type="button" (click)="loadAttachments(getId(g))" [disabled]="attachmentsLoading[getId(g)]">
+                <span *ngIf="attachmentsLoading[getId(g)]"><span class="spinner" aria-hidden="true"></span> Loading...</span>
+                <span *ngIf="!attachmentsLoading[getId(g)]">{{ attachmentsById[getId(g)]?.length ? 'Refresh attachments' : 'View attachments' }}</span>
               </button>
               <div class="inline-help error" *ngIf="attachmentsError[getId(g)]">{{ attachmentsError[getId(g)] }}</div>
               <ul class="attachment-list" *ngIf="attachmentsById[getId(g)]?.length">
@@ -228,7 +231,7 @@ type FileMeta = { id?: string; fileName?: string; url?: string; fileDownloadUri?
         <div class="response warn" *ngIf="!cwGrievancesLoading && !cwGrievances.length && !cwGrievancesError">No grievances for this case worker.</div>
       </section>
 
-      <section class="card">
+      <section class="card" *ngIf="!showGrievances">
         <div class="card-head">
           <h2>Register case worker</h2>
           <p class="helper">Onboard a new case worker for your department.</p>
